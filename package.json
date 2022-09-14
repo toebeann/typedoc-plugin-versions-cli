@@ -19,6 +19,9 @@
     "prebuild": "npm run format",
     "docs": "typedoc",
     "predocs": "npm run format",
+    "postdocs": "npm run docs:purge",
+    "docs:purge": "npm run tpv purge -- -y",
+    "postdocs:purge": "npm run tpv sync -- -y --symlinks",
     "tpv": "ts-node src/cli.ts",
     "tpv:dist": "node dist/cli.js"
   },
