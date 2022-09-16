@@ -4,10 +4,10 @@
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
-    "tpv": "./dist/cli.js",
     "typedoc-plugin-versions": "./dist/cli.js",
-    "tpv-cli": "./dist/cli.js",
-    "typedoc-plugin-versions-cli": "./dist/cli.js"
+    "typedoc-plugin-versions-cli": "./dist/cli.js",
+    "typedoc-versions": "./dist/cli.js",
+    "tpv": "./dist/cli.js"
   },
   "types": "./types/index.d.ts",
   "scripts": {
