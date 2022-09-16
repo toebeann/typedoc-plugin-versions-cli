@@ -1,3 +1,4 @@
+import { each, filter } from 'async';
 import { version } from 'typedoc-plugin-versions';
 import {
     loadMetadata,
@@ -5,7 +6,7 @@ import {
     getSemanticVersion,
     getVersionAlias,
 } from 'typedoc-plugin-versions/src/etc/utils';
-import { rmSync } from 'fs-extra';
+import { rm } from 'fs-extra';
 import { join, relative, resolve } from 'path';
 import { EOL } from 'os';
 import prompts from 'prompts';
@@ -67,7 +68,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     args: T
 ): Promise<void> {
     const pending: version[] = [];
-    const options = getOptions(args);
+    const options = await getOptions(args);
     const metadata = refreshMetadata(
         loadMetadata(options.out),
         options.out,
@@ -77,12 +78,12 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
 
     if (args.stale)
         pending.push(
-            ...getStale(
+            ...(await getStale(
                 metadata.versions,
                 options.out,
                 options.versions.stable,
                 options.versions.dev
-            )
+            ))
         );
 
     if (pending.length === 0) {
@@ -116,10 +117,10 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     ) {
         if (!args.yes) console.log('');
 
-        for (const version of pending) {
+        await each(pending, async (version) => {
             const dir = resolve(join(options.out, version));
-            if (isDir(dir)) rmSync(dir, { recursive: true, force: true });
-        }
+            await rm(dir, { recursive: true, force: true });
+        });
     }
 }
 
@@ -155,8 +156,10 @@ export const getStale = (
     docsPath: string,
     stable: version | 'auto',
     dev: version | 'auto'
-): version[] =>
-    versions.filter(
-        (v, _, s) =>
-            isDir(resolve(join(docsPath, v))) && isStale(v, s, stable, dev)
+): Promise<version[]> =>
+    filter(
+        versions,
+        async (version) =>
+            (await isDir(resolve(join(docsPath, version)))) &&
+            isStale(version, versions, stable, dev)
     );

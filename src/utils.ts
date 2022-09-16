@@ -1,11 +1,14 @@
+import { each, filter, find } from 'async';
 import {
+    pathExists,
     pathExistsSync,
+    stat,
     statSync,
-    lstatSync,
-    readdirSync,
-    readJsonSync,
-    readlinkSync,
-    unlinkSync,
+    lstat,
+    readdir,
+    readJson,
+    readlink,
+    unlink,
 } from 'fs-extra';
 import { join, relative, resolve } from 'path';
 import {
@@ -17,7 +20,9 @@ import {
 import { options, out } from './commands/builders';
 import { Options, Args } from './';
 
-export function getOptions<O extends typeof options>(args: Args<O>): Options {
+export async function getOptions<O extends typeof options>(
+    args: Args<O>
+): Promise<Options> {
     const tsconfig = getParsedCommandLineOfConfigFile(
         args.tsconfig,
         {},
@@ -33,7 +38,7 @@ export function getOptions<O extends typeof options>(args: Args<O>): Options {
                 ),
         }
     );
-    const typedoc = readJsonSync(args.typedoc);
+    const typedoc = await readJson(await args.typedoc);
 
     const out = resolve(
         args.out ??
@@ -42,7 +47,7 @@ export function getOptions<O extends typeof options>(args: Args<O>): Options {
             join(process.cwd(), 'docs')
     );
 
-    if (!isDir(out)) {
+    if (!(await isDir(out))) {
         throw new Error(
             `Directory does not exist: ${relative(process.cwd(), out)}`
         );
@@ -60,31 +65,21 @@ export function getOptions<O extends typeof options>(args: Args<O>): Options {
     };
 }
 
-export function getOut<O extends { out: typeof out }>(args: Args<O>): string {
+export async function getOut<O extends { out: typeof out }>(
+    args: Args<O>
+): Promise<string> {
     if (args.out) return args.out;
-    else if (isOptionsArgs(args)) return getOptions(args).out;
+    else if (isOptionsArgs(args)) return (await getOptions(args)).out;
     else throw new Error(`Could not parse 'out': ${JSON.stringify(args)}`);
 }
 
 export const isOptionsArgs = (obj: unknown): obj is Args<typeof options> =>
-    typeof obj === 'object' &&
     obj !== null &&
+    typeof obj === 'object' &&
     'typedoc' in obj &&
     'tsconfig' in obj;
 
-export function findFile(path?: string, fallbackPaths?: string[]): string;
-export function findFile(path?: string, tsconfig?: boolean): string;
-export function findFile(
-    path = process.cwd(),
-    fallbackPathsOrTsConfig: string[] | boolean = []
-): string {
-    const tsconfig =
-        typeof fallbackPathsOrTsConfig === 'boolean' && fallbackPathsOrTsConfig;
-    const fallbackPaths =
-        typeof fallbackPathsOrTsConfig !== 'boolean'
-            ? fallbackPathsOrTsConfig
-            : [];
-
+export function findTsConfigFile(path = process.cwd()): string {
     path = resolve(path);
 
     if (!pathExistsSync(path))
@@ -92,9 +87,7 @@ export function findFile(
             `Path does not exist: ${relative(process.cwd(), path)}`
         );
 
-    const file = tsconfig
-        ? findConfigFile(path, isFile)
-        : [path, ...fallbackPaths.map((p) => join(path, p))].find(isFile);
+    const file = findConfigFile(path, isFileSync);
 
     if (!file)
         throw new Error(
@@ -104,22 +97,62 @@ export function findFile(
     return resolve(file);
 }
 
-export const isFile = (path: string): boolean =>
+export async function findFile(
+    path = process.cwd(),
+    fallbackPaths: string[] = []
+): Promise<string> {
+    path = resolve(path);
+
+    if (!(await pathExists(path)))
+        throw new Error(
+            `Path does not exist: ${relative(process.cwd(), path)}`
+        );
+
+    const file = await find(
+        [path, ...fallbackPaths.map((p) => join(path, p))],
+        isFile
+    );
+
+    if (!file)
+        throw new Error(
+            `File does not exist: ${relative(process.cwd(), path)}`
+        );
+
+    return resolve(file);
+}
+
+export const isFileSync = (path: string): boolean =>
     statSync(path, { throwIfNoEntry: false })?.isFile() ?? false;
 
-export const isDir = (path: string): boolean =>
-    statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false;
-
-export const isSymlink = (path: string): boolean =>
-    lstatSync(path, { throwIfNoEntry: false })?.isSymbolicLink() ?? false;
-
-export const isBrokenSymlink = (path: string): boolean =>
-    isSymlink(path) && !pathExistsSync(readlinkSync(path));
-
-export function unlinkBrokenSymlinks(dir: string): void {
-    for (const path of readdirSync(dir)
-        .map((p) => join(dir, p))
-        .filter(isBrokenSymlink)) {
-        unlinkSync(path);
+export async function isFile(path: string): Promise<boolean> {
+    try {
+        return (await stat(path)).isFile();
+    } catch {
+        return false;
     }
+}
+
+export async function isDir(path: string): Promise<boolean> {
+    try {
+        return (await stat(path)).isDirectory();
+    } catch {
+        return false;
+    }
+}
+
+export async function isSymlink(path: string): Promise<boolean> {
+    try {
+        return (await lstat(path)).isSymbolicLink();
+    } catch {
+        return false;
+    }
+}
+
+export const isBrokenSymlink = async (path: string): Promise<boolean> =>
+    (await isSymlink(path)) && !(await pathExists(await readlink(path)));
+
+export async function unlinkBrokenSymlinks(dir: string): Promise<void> {
+    const paths = (await readdir(dir)).map((path) => join(dir, path));
+    const brokenSymLinks = await filter(paths, isBrokenSymlink);
+    await each(brokenSymLinks, unlink);
 }

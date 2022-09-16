@@ -1,4 +1,4 @@
-import { findFile, isDir } from '../utils';
+import { findFile, findTsConfigFile, isDir } from '../utils';
 import { join, resolve } from 'path';
 
 export const out = {
@@ -6,10 +6,11 @@ export const out = {
     normalize: true,
     description: 'path to your typedoc output directory',
     defaultDescription: `"docs" (if not set in config)`,
-    coerce: (path: string) => {
+    coerce: async (path: string): Promise<string> => {
         path = resolve(path);
 
-        if (!isDir(path)) throw new Error(`Directory does not exist: ${path}`);
+        if (!(await isDir(path)))
+            throw new Error(`Directory does not exist: ${path}`);
 
         return path;
     },
@@ -20,7 +21,7 @@ export const typedoc = {
     normalize: true,
     description: 'path to your typedoc config',
     default: '.',
-    coerce: (path: string) =>
+    coerce: (path: string): Promise<string> =>
         findFile(path, [
             'typedoc.json',
             'typedoc.js',
@@ -34,7 +35,7 @@ export const tsconfig = {
     normalize: true,
     description: 'path to your tsconfig',
     default: '.',
-    coerce: (path: string) => findFile(path, true),
+    coerce: (path: string): string => findTsConfigFile(path),
 };
 
 export const options = { out, typedoc, tsconfig };

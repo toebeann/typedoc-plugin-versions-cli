@@ -21,7 +21,8 @@
     "predocs": "npm run format",
     "postdocs": "npm run docs:purge",
     "docs:purge": "npm run tpv purge -- -y",
-    "postdocs:purge": "npm run tpv sync -- -y --symlinks",
+    "postdocs:purge": "npm run docs:sync",
+    "docs:sync": "npm run tpv sync -- -y --symlinks",
     "tpv": "ts-node src/cli.ts",
     "tpv:dist": "node dist/cli.js"
   },
@@ -65,6 +66,7 @@
     "darwin"
   ],
   "dependencies": {
+    "async": "^3.2.4",
     "cli-diff": "^1.0.0",
     "prompts": "^2.4.2",
     "semver": "^7.3.7",
@@ -72,6 +74,7 @@
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.3",
+    "@types/async": "^3.2.15",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^29.0.1",
     "@types/prompts": "^2.0.14",

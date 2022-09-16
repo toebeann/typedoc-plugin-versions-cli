@@ -1,3 +1,4 @@
+import { each } from 'async';
 import { metadata } from 'typedoc-plugin-versions';
 import {
     getMetadataPath,
@@ -10,7 +11,7 @@ import {
     getSemanticVersion,
 } from 'typedoc-plugin-versions/src/etc/utils';
 import diff from 'cli-diff';
-import { readFileSync, writeFileSync } from 'fs-extra';
+import { readFile, writeFile } from 'fs-extra';
 import { EOL } from 'os';
 import { join, relative, resolve } from 'path';
 import prompts from 'prompts';
@@ -33,7 +34,7 @@ export const builder = {
 export async function handler<T extends Args<typeof builder>>(
     args: T
 ): Promise<void> {
-    const options = getOptions(args);
+    const options = await getOptions(args);
 
     const metadata = loadMetadata(options.out);
     const refreshedMetadata = refreshMetadata(
@@ -44,14 +45,14 @@ export async function handler<T extends Args<typeof builder>>(
     ) as refreshedMetadata;
 
     const packageVersion = getSemanticVersion();
-    if (!isDir(resolve(join(options.out, packageVersion)))) {
+    if (!(await isDir(resolve(join(options.out, packageVersion))))) {
         console.error(
             `Missing docs for package.json version: ${packageVersion}${EOL}Did you forget to run typedoc?`
         );
         process.exit(1);
     }
 
-    const changes = getDiffs(options.out, metadata, refreshedMetadata);
+    const changes = await getDiffs(options.out, metadata, refreshedMetadata);
     if (!args.symlinks && changes.length === 0) {
         console.log('Already up-to-date.');
         return;
@@ -82,11 +83,11 @@ export async function handler<T extends Args<typeof builder>>(
     ) {
         if (!args.yes) console.log('');
 
-        for (const change of changes) {
+        await each(changes, async (change) => {
             console.time(change.label);
-            change.save();
+            await change.save();
             console.timeEnd(change.label);
-        }
+        });
 
         symlinks = true;
     }
@@ -94,21 +95,23 @@ export async function handler<T extends Args<typeof builder>>(
     if (symlinks) {
         const symlinksLabel = 'symlinks';
         console.time(symlinksLabel);
-        unlinkBrokenSymlinks(options.out);
         makeSymlinks(options.out, refreshedMetadata);
+        await unlinkBrokenSymlinks(options.out);
         console.timeEnd(symlinksLabel);
     }
 }
 
-export function getDiffs(
+export async function getDiffs(
     docsPath: string,
     metadata: metadata,
     refreshedMetadata: refreshedMetadata
-): {
-    diff: ReturnType<typeof diff>;
-    label: string;
-    save: (output?: string) => void;
-}[] {
+): Promise<
+    {
+        diff: ReturnType<typeof diff>;
+        label: string;
+        save: (() => void) | (() => Promise<void>);
+    }[]
+> {
     const versionsPath = resolve(join(docsPath, 'versions.js'));
     const versionsOutput = refreshVersionJs(refreshedMetadata);
     const indexPath = resolve(join(docsPath, 'index.html'));
@@ -121,23 +124,23 @@ export function getDiffs(
         },
         {
             diff: diff(
-                isFile(versionsPath)
-                    ? readFileSync(versionsPath, { encoding: 'utf8' })
+                (await isFile(versionsPath))
+                    ? await readFile(versionsPath, { encoding: 'utf8' })
                     : '',
                 versionsOutput
             ),
             label: relative(process.cwd(), versionsPath),
-            save: () => writeFileSync(versionsPath, versionsOutput),
+            save: () => writeFile(versionsPath, versionsOutput),
         },
         {
             diff: diff(
-                isFile(indexPath)
-                    ? readFileSync(indexPath, { encoding: 'utf8' })
+                (await isFile(indexPath))
+                    ? await readFile(indexPath, { encoding: 'utf8' })
                     : '',
                 refreshIndexHtml(refreshedMetadata)
             ),
             label: relative(process.cwd(), indexPath),
-            save: () => writeFileSync(indexPath, indexOutput),
+            save: () => writeFile(indexPath, indexOutput),
         },
     ].filter((x) => x.diff.length > 0);
 }
