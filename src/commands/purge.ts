@@ -10,63 +10,71 @@ import { rm } from 'fs-extra';
 import { join, relative, resolve } from 'path';
 import { EOL } from 'os';
 import prompts from 'prompts';
-import { gt } from 'semver';
+import { gt, satisfies } from 'semver';
 import { Argv } from 'yargs';
 import { options, yes } from './builders';
-import { getOptions, isDir } from '../utils';
+import { drop, getOptions, isDir } from '../utils';
 import { Args, refreshedMetadata } from '../';
 
-export const command = ['purge [ranges..]'];
+export const command = ['purge [versions..]'];
 export const description = 'purge old doc builds';
 export const builder = (yargs: Argv) =>
-    yargs.options({
-        stale: {
-            alias: 's',
-            type: 'boolean' as const,
-            description: 'purge stale dev versions',
-            default: true,
-        },
-        // sync: {
-        //     alias: 's',
-        //     type: 'boolean',
-        //     description: 'synchronize metadata and symlinks',
-        //     default: true,
-        // },
-        // 'symlinks': {
-        //     alias: 'symlinks',
-        //     type: 'boolean',
-        //     description: 'always synchronize symlinks even if no metadata changes detected',
-        //     default: false
-        // },
-        // 'major-versions': {
-        //     alias: 'major',
-        //     type: 'number',
-        //     description: 'keep only the specified number of major versions',
-        // },
-        // 'minor-versions': {
-        //     alias: 'minor',
-        //     type: 'number',
-        //     description:
-        //         'keep only the specified number of minor versions per major version',
-        // },
-        // 'patch-versions': {
-        //     alias: 'patch',
-        //     type: 'number',
-        //     description:
-        //         'keep only the specified number of patch versions per minor version',
-        // },
-        yes,
-        ...options,
-    });
-// .positional('ranges', {
-//     type: 'string',
-//     description: 'version ranges to purge',
-//     array: true,
-// });
+    yargs
+        .options({
+            stale: {
+                alias: 's',
+                type: 'boolean' as const,
+                description: 'purge stale dev versions',
+                default: true,
+            },
+            // major: {
+            //     type: 'number',
+            //     description:
+            //         'purge all but the specified number of major versions',
+            //     default: Infinity,
+            //     coerce: coercePurgeVersionsNum,
+            // },
+            // minor: {
+            //     type: 'number',
+            //     description:
+            //         'purge all but the specified number of minor versions per major version',
+            //    default: Infinity,
+            //    coerce: coercePurgeVersionsNum,
+            // },
+            // patch: {
+            //     type: 'number',
+            //     description:
+            //         'purge all but the specified number of patch versions per minor version',
+            //    default: Infinity,
+            //    coerce: coercePurgeVersionsNum,
+            // },
+            exclude: {
+                alias: ['e'],
+                type: 'string',
+                array: true,
+                description: 'exclude versions from being purged',
+                coerce: (exclude: string[]) =>
+                    exclude.map((value) => {
+                        value = value.trim();
+                        return (value.startsWith('"') && value.endsWith('"')) ||
+                            (value.startsWith("'") && value.endsWith("'"))
+                            ? [...value].slice(1, -1).join('')
+                            : value;
+                    }),
+            },
+            yes,
+            ...options,
+        })
+        .positional('versions', {
+            type: 'string',
+            description: 'versions to purge',
+            array: true,
+        });
 
 export async function handler<T extends Args<ReturnType<typeof builder>>>(
     args: T
 ): Promise<void> {
+    console.debug(args);
     const pending: version[] = [];
     const options = await getOptions(args);
     const metadata = refreshMetadata(
@@ -76,7 +84,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
         options.versions.dev
     ) as refreshedMetadata;
 
-    if (args.stale)
+    if (args.stale) {
         pending.push(
             ...(await getStale(
                 metadata.versions,
@@ -85,6 +93,9 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
                 options.versions.dev
             ))
         );
+    }
+
+    drop(pending, (v) => shouldExclude(v, args.exclude));
 
     if (pending.length === 0) {
         console.log('Nothing to purge!');
@@ -141,15 +152,13 @@ export const isPinned = (
 
 export const isStale = (
     version: version,
-    versions: version[],
+    versions: readonly version[],
     stable: version | 'auto',
     dev: version | 'auto'
 ): boolean =>
     !isPinned(version, stable, dev) &&
     isDev(version, dev) &&
-    !!versions
-        .filter((v) => isStable(v, stable))
-        .find((s) => gt(s, version, true));
+    versions.some((v) => isStable(v, stable) && gt(v, version, true));
 
 export const getStale = (
     versions: version[],
@@ -163,3 +172,19 @@ export const getStale = (
             (await isDir(resolve(join(docsPath, version)))) &&
             isStale(version, versions, stable, dev)
     );
+
+export const isInfinite = (n: number): boolean =>
+    typeof n !== 'number' || !isFinite(n) || isNaN(n) || n < 0;
+export const shouldPurge = (...nums: number[]): boolean =>
+    nums.some((n) => !isInfinite(n));
+export const shouldExclude = (
+    version: version,
+    exclude: string[] = []
+): boolean =>
+    exclude.some((e) =>
+        satisfies(version, e, { loose: true, includePrerelease: true })
+    );
+export const coercePurgeVersionsNum = (num: number | number[]) => {
+    num = typeof num === 'number' ? num : num.at(-1) ?? Infinity;
+    return shouldPurge(num) ? num : undefined;
+};

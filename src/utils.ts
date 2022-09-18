@@ -99,7 +99,7 @@ export function findTsConfigFile(path = process.cwd()): string {
 
 export async function findFile(
     path = process.cwd(),
-    fallbackPaths: string[] = []
+    fallbackPaths: readonly string[] = []
 ): Promise<string> {
     path = resolve(path);
 
@@ -155,4 +155,41 @@ export async function unlinkBrokenSymlinks(dir: string): Promise<void> {
     const paths = (await readdir(dir)).map((path) => join(dir, path));
     const brokenSymLinks = await filter(paths, isBrokenSymlink);
     await each(brokenSymLinks, unlink);
+}
+
+export function drop<T>(array: T[], predicate: (value: T) => boolean): T[];
+export function drop<T>(array: T[], elements: readonly T[]): T[];
+export function drop<T>(
+    array: T[],
+    elementsOrPredicate: readonly T[] | ((value: T) => boolean)
+): T[] {
+    const toBeDropped =
+        typeof elementsOrPredicate === 'function'
+            ? array.filter(elementsOrPredicate)
+            : elementsOrPredicate;
+
+    const dropped = [];
+    for (const value of toBeDropped) {
+        const i = array.indexOf(value);
+        if (i >= 0) {
+            dropped.push(...array.splice(i, 1));
+        }
+    }
+    return dropped;
+}
+
+export function exclude<T>(
+    array: readonly T[],
+    predicate: (value: T) => boolean
+): T[];
+export function exclude<T>(array: readonly T[], elements: readonly T[]): T[];
+export function exclude<T>(
+    array: readonly T[],
+    elementsOrPredicate: readonly T[] | ((value: T) => boolean)
+): T[] {
+    return array.filter((v) =>
+        typeof elementsOrPredicate === 'function'
+            ? !elementsOrPredicate(v)
+            : !elementsOrPredicate.includes(v)
+    );
 }

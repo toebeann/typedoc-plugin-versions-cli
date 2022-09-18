@@ -3,7 +3,6 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 export const cli = yargs(hideBin(process.argv))
-    .parserConfiguration({ 'duplicate-arguments-array': false })
     .commandDir('commands', { extensions: ['ts', 'js'] })
     .strictCommands()
     .demandCommand(1, '')
