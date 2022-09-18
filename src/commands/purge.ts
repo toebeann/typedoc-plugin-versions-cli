@@ -10,11 +10,19 @@ import { rm } from 'fs-extra';
 import { join, relative, resolve } from 'path';
 import { EOL } from 'os';
 import prompts from 'prompts';
-import { gt, satisfies } from 'semver';
+import {
+    gt,
+    major,
+    minor,
+    patch,
+    RangeOptions,
+    rcompare,
+    satisfies,
+} from 'semver';
 import { Argv } from 'yargs';
 import { options, yes } from './builders';
-import { drop, getOptions, isDir } from '../utils';
-import { Args, refreshedMetadata } from '../';
+import { coerceStringArray, drop, exclude, getOptions, isDir } from '../utils';
+import { Args, Options, refreshedMetadata } from '../';
 
 export const command = ['purge [versions..]'];
 export const description = 'purge old doc builds';
@@ -27,55 +35,54 @@ export const builder = (yargs: Argv) =>
                 description: 'purge stale dev versions',
                 default: true,
             },
-            // major: {
-            //     type: 'number',
-            //     description:
-            //         'purge all but the specified number of major versions',
-            //     default: Infinity,
-            //     coerce: coercePurgeVersionsNum,
-            // },
-            // minor: {
-            //     type: 'number',
-            //     description:
-            //         'purge all but the specified number of minor versions per major version',
-            //    default: Infinity,
-            //    coerce: coercePurgeVersionsNum,
-            // },
-            // patch: {
-            //     type: 'number',
-            //     description:
-            //         'purge all but the specified number of patch versions per minor version',
-            //    default: Infinity,
-            //    coerce: coercePurgeVersionsNum,
-            // },
+            major: {
+                type: 'number',
+                description:
+                    'purge all but the specified number of major versions',
+                default: Infinity,
+                coerce: coercePurgeVersionsNum,
+            },
+            minor: {
+                type: 'number',
+                description:
+                    'purge all but the specified number of minor versions per major version',
+                default: Infinity,
+                coerce: coercePurgeVersionsNum,
+            },
+            patch: {
+                type: 'number',
+                description:
+                    'purge all but the specified number of patch versions per minor version',
+                default: Infinity,
+                coerce: coercePurgeVersionsNum,
+            },
             exclude: {
-                alias: ['e'],
+                alias: 'e',
                 type: 'string',
                 array: true,
                 description: 'exclude versions from being purged',
-                coerce: (exclude: string[]) =>
-                    exclude.map((value) => {
-                        value = value.trim();
-                        return (value.startsWith('"') && value.endsWith('"')) ||
-                            (value.startsWith("'") && value.endsWith("'"))
-                            ? [...value].slice(1, -1).join('')
-                            : value;
-                    }),
+                coerce: coerceStringArray,
+            },
+            prerelease: {
+                alias: 'pre',
+                type: 'boolean',
+                default: false,
+                description:
+                    'include prerelease versions when evaluating ranges',
             },
             yes,
             ...options,
         })
         .positional('versions', {
             type: 'string',
-            description: 'versions to purge',
             array: true,
+            description: 'versions to purge',
+            coerce: coerceStringArray,
         });
 
 export async function handler<T extends Args<ReturnType<typeof builder>>>(
     args: T
 ): Promise<void> {
-    console.debug(args);
-    const pending: version[] = [];
     const options = await getOptions(args);
     const metadata = refreshMetadata(
         loadMetadata(options.out),
@@ -83,19 +90,57 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
         options.versions.stable,
         options.versions.dev
     ) as refreshedMetadata;
+    const includePrerelease = args.prerelease;
+    const versions = exclude(metadata.versions, (v) =>
+        shouldExclude(v, args.exclude, {
+            loose: true,
+            includePrerelease,
+        })
+    );
 
-    if (args.stale) {
-        pending.push(
-            ...(await getStale(
-                metadata.versions,
-                options.out,
-                options.versions.stable,
-                options.versions.dev
-            ))
-        );
+    // args.versions
+    const pending = getVersionsToPurge(versions, args.versions, {
+        loose: true,
+        includePrerelease,
+    });
+    drop(versions, pending);
+
+    // args.major
+    if (args.major !== undefined) {
+        const purge = getMajorVersionsToPurge(versions, args.major, {
+            loose: true,
+            includePrerelease,
+        });
+        pending.push(...purge);
+        drop(versions, purge);
     }
 
-    drop(pending, (v) => shouldExclude(v, args.exclude));
+    // args.minor
+    if (args.minor !== undefined) {
+        const purge = getMinorVersionsToPurge(versions, args.minor, {
+            loose: true,
+            includePrerelease,
+        });
+        pending.push(...purge);
+        drop(versions, purge);
+    }
+
+    // args.patch
+    if (args.patch !== undefined) {
+        const purge = getPatchVersionsToPurge(versions, args.patch, {
+            loose: true,
+            includePrerelease,
+        });
+        pending.push(...purge);
+        drop(versions, purge);
+    }
+
+    // args.stale
+    if (args.stale) {
+        const purge = await getStaleVersionsToPurge(versions, options);
+        pending.push(...purge);
+        drop(versions, purge);
+    }
 
     if (pending.length === 0) {
         console.log('Nothing to purge!');
@@ -103,16 +148,15 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     }
 
     console.log(
-        (args.yes ? 'Purging:' : 'Pending purge:')
-            .concat(EOL)
-            .concat(
-                pending
-                    .map(
-                        (v) =>
-                            `- ${relative(process.cwd(), join(options.out, v))}`
-                    )
-                    .join(EOL)
-            )
+        (args.yes ? 'Purging:' : 'Pending purge:').concat(EOL).concat(
+            pending
+                .filter((v, i, s) => s.indexOf(v) === i)
+                .sort(rcompare)
+                .map(
+                    (v) => `- ${relative(process.cwd(), join(options.out, v))}`
+                )
+                .join(EOL)
+        )
     );
 
     if (
@@ -175,16 +219,101 @@ export const getStale = (
 
 export const isInfinite = (n: number): boolean =>
     typeof n !== 'number' || !isFinite(n) || isNaN(n) || n < 0;
+
 export const shouldPurge = (...nums: number[]): boolean =>
     nums.some((n) => !isInfinite(n));
+
 export const shouldExclude = (
     version: version,
-    exclude: string[] = []
-): boolean =>
-    exclude.some((e) =>
-        satisfies(version, e, { loose: true, includePrerelease: true })
-    );
+    exclude: string[] = [],
+    options: RangeOptions = {}
+): boolean => exclude.some((e) => satisfies(version, e, options));
 export const coercePurgeVersionsNum = (num: number | number[]) => {
     num = typeof num === 'number' ? num : num.at(-1) ?? Infinity;
     return shouldPurge(num) ? num : undefined;
 };
+
+export const getVersionsToPurge = (
+    versions: readonly version[],
+    versionsToPurge: readonly string[] = [],
+    options: RangeOptions = {}
+): version[] => [
+    ...versions.filter((version) =>
+        versionsToPurge.some((v) => satisfies(version, v, options))
+    ),
+];
+
+export function getMajorVersionsToPurge(
+    versions: readonly version[],
+    number: number,
+    options: RangeOptions = {}
+): version[] {
+    const majorVersions = versions
+        .map((v) => `${major(v)}.x.x`)
+        .filter((v, i, s) => s.indexOf(v) === i)
+        .slice(number);
+
+    return versions.filter((version) =>
+        majorVersions.some((v) => satisfies(version, v, options))
+    );
+}
+
+export function getMinorVersionsToPurge(
+    versions: readonly version[],
+    number: number,
+    options: RangeOptions = {}
+): version[] {
+    const minorVersionsByMajor = new Map<string, string[]>();
+    for (const version of versions) {
+        const key = `${major(version)}`;
+        minorVersionsByMajor.set(key, [
+            ...(minorVersionsByMajor.get(key) ?? []),
+            `${key}.${minor(version)}.x`,
+        ]);
+    }
+
+    const minorVersions = sliceValues(minorVersionsByMajor, number).flat();
+    return versions.filter((version) =>
+        minorVersions.some((v) => satisfies(version, v, options))
+    );
+}
+
+export function getPatchVersionsToPurge(
+    versions: readonly version[],
+    number: number,
+    options: RangeOptions = {}
+): version[] {
+    const patchVersionsByMinor = new Map<string, string[]>();
+    for (const version of versions) {
+        const key = `${major(version)}.${minor(version)}`;
+        patchVersionsByMinor.set(key, [
+            ...(patchVersionsByMinor.get(key) ?? []),
+            `${key}.${patch(version)}`,
+        ]);
+    }
+
+    const patchVersions = sliceValues(patchVersionsByMinor, number).flat();
+    return versions.filter((version) =>
+        patchVersions.some((v) => satisfies(version, v, options))
+    );
+}
+
+export const getStaleVersionsToPurge = (
+    versions: version[],
+    options: Options
+): Promise<version[]> =>
+    getStale(
+        versions,
+        options.out,
+        options.versions.stable,
+        options.versions.dev
+    );
+
+export const sliceValues = (
+    map: Map<string, string[]>,
+    number: number
+): string[][] =>
+    [...map.values()].map(
+        (value) =>
+            value.filter((v, i, s) => s.indexOf(v) === i).slice(number) ?? []
+    );

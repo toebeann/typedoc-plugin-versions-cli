@@ -193,3 +193,12 @@ export function exclude<T>(
             : !elementsOrPredicate.includes(v)
     );
 }
+
+export const coerceStringArray = (array: string[]) =>
+    array.map((value) => {
+        value = value.trim();
+        return (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+            ? [...value].slice(1, -1).join('')
+            : value;
+    });
