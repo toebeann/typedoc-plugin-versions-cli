@@ -1,6 +1,11 @@
+import { join, resolve } from 'node:path';
 import { findFile, findTsConfigFile, isDir } from '../utils';
-import { join, resolve } from 'path';
 
+/**
+ * `out` option builder for {@link https://yargs.js.org/docs yargs} commands.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ */
 export const out = {
     type: 'string' as const,
     normalize: true,
@@ -18,6 +23,11 @@ export const out = {
     },
 };
 
+/**
+ * `typedoc` option builder for {@link https://yargs.js.org/docs yargs} commands.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ */
 export const typedoc = {
     type: 'string' as const,
     normalize: true,
@@ -34,6 +44,11 @@ export const typedoc = {
     },
 };
 
+/**
+ * `tsconfig` option builder for {@link https://yargs.js.org/docs yargs} commands.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ */
 export const tsconfig = {
     type: 'string' as const,
     normalize: true,
@@ -45,8 +60,18 @@ export const tsconfig = {
     },
 };
 
-export const options = { out, typedoc, tsconfig };
+/**
+ * Commonly used option builders for {@link https://yargs.js.org/docs yargs} commands.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ */
+export const commonOptions = { out, typedoc, tsconfig };
 
+/**
+ * `yes` option builder for {@link https://yargs.js.org/docs yargs} commands.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ */
 export const yes = {
     alias: 'y',
     type: 'boolean' as const,

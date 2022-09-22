@@ -1,3 +1,6 @@
+import { EOL } from 'node:os';
+import { join, relative, resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { each, filter } from 'async';
 import { version } from 'typedoc-plugin-versions';
 import {
@@ -7,8 +10,6 @@ import {
     getVersionAlias,
 } from 'typedoc-plugin-versions/src/etc/utils';
 import { rm } from 'fs-extra';
-import { join, relative, resolve } from 'path';
-import { EOL } from 'os';
 import prompts from 'prompts';
 import {
     gt,
@@ -20,12 +21,24 @@ import {
     satisfies,
 } from 'semver';
 import { Argv } from 'yargs';
-import { options, yes } from './builders';
+import { commonOptions, yes } from './builders';
 import { coerceStringArray, drop, exclude, getOptions, isDir } from '../utils';
 import { Args, Options, refreshedMetadata } from '../';
 
+/**
+ * The `purge` command string syntax.
+ */
 export const command = ['purge [versions..]'];
+/**
+ * Description of the `purge` command.
+ */
 export const description = 'purge old doc builds';
+
+/**
+ * {@link https://yargs.js.org/docs yargs} builder for the `purge` command.
+ * @param {Argv} yargs A yargs instance used for building the command-specific options.
+ * @returns The yargs instance.
+ */
 export const builder = (yargs: Argv) =>
     yargs
         .options({
@@ -71,7 +84,7 @@ export const builder = (yargs: Argv) =>
                     'include prerelease versions when evaluating ranges',
             },
             yes,
-            ...options,
+            ...commonOptions,
         })
         .positional('versions', {
             type: 'string',
@@ -80,6 +93,11 @@ export const builder = (yargs: Argv) =>
             coerce: coerceStringArray,
         });
 
+/**
+ * {@link https://yargs.js.org/docs yargs} handler for the `purge` command.
+ * @param {T} args The {@link @types/yargs!yargs.Argv argv} object parsed from the command line arguments.
+ * @typeParam T The type of the parsed {@link @types/yargs!yargs.Argv argv} object.
+ */
 export async function handler<T extends Args<ReturnType<typeof builder>>>(
     args: T
 ): Promise<void> {
@@ -106,7 +124,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     drop(versions, pending);
 
     // args.major
-    if (args.major !== undefined) {
+    if (isValid(args.major)) {
         const purge = getMajorVersionsToPurge(versions, args.major, {
             loose: true,
             includePrerelease,
@@ -116,7 +134,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     }
 
     // args.minor
-    if (args.minor !== undefined) {
+    if (isValid(args.minor)) {
         const purge = getMinorVersionsToPurge(versions, args.minor, {
             loose: true,
             includePrerelease,
@@ -126,7 +144,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     }
 
     // args.patch
-    if (args.patch !== undefined) {
+    if (isValid(args.patch)) {
         const purge = getPatchVersionsToPurge(versions, args.patch, {
             loose: true,
             includePrerelease,
@@ -152,9 +170,7 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
             pending
                 .filter((v, i, s) => s.indexOf(v) === i)
                 .sort(rcompare)
-                .map(
-                    (v) => `- ${relative(process.cwd(), join(options.out, v))}`
-                )
+                .map((v) => `- ${relative(cwd(), join(options.out, v))}`)
                 .join(EOL)
         )
     );
@@ -179,12 +195,40 @@ export async function handler<T extends Args<ReturnType<typeof builder>>>(
     }
 }
 
+/**
+ * Determines whether a given {@link typedoc-plugin-versions!version version} is considered `stable` by
+ * {@link https://citkane.github.io/typedoc-plugin-versions typedoc-plugin-versions}.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version} version The version.
+ * @param {version | 'auto'} stable The {@link typedoc-plugin-versions!versionsOptions.stable versions.stable} option from the typedoc config.
+ * @returns {boolean} Whether the version is considered `stable`.
+ */
 export const isStable = (version: version, stable: version | 'auto'): boolean =>
     getVersionAlias(version, stable) === 'stable';
 
+/**
+ * Determines whether a given {@link typedoc-plugin-versions!version version} is considered `dev` by
+ * {@link https://citkane.github.io/typedoc-plugin-versions typedoc-plugin-versions}.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version} version The version.
+ * @param {version | 'auto'} dev The {@link typedoc-plugin-versions!versionsOptions.dev versions.dev} option from the typedoc config.
+ * @returns {boolean} Whether the version is considered `dev`.
+ */
 export const isDev = (version: version, dev: version | 'auto'): boolean =>
     getVersionAlias(version, undefined, dev) === 'dev';
 
+/**
+ * Determines whether a given {@link typedoc-plugin-versions!version version} is "pinned" in the user's
+ * {@link https://citkane.github.io/typedoc-plugin-versions typedoc-plugin-versions} configuration, i.e. marked as `stable` or `dev`.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version} version The version.
+ * @param {version | 'auto'} stable The {@link typedoc-plugin-versions!versionsOptions.stable versions.stable} option from the typedoc config.
+ * @param {version | 'auto'} dev The {@link typedoc-plugin-versions!versionsOptions.dev versions.dev} option from the typedoc config.
+ * @returns {boolean} Whether the version is pinned.
+ */
 export const isPinned = (
     version: version,
     stable: version | 'auto',
@@ -194,6 +238,17 @@ export const isPinned = (
         getSemanticVersion(version) === getSemanticVersion(stable)) ||
     (dev !== 'auto' && getSemanticVersion(version) === getSemanticVersion(dev));
 
+/**
+ * Determines whether a given {@link typedoc-plugin-versions!version version} is "stale," e.g. prerelease versions
+ * that have been superseded by non-prerelease versions.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version} version The version.
+ * @param {readonly version[]} versions An array of relevant {@link typedoc-plugin-versions!version versions} for reference.
+ * @param {version | 'auto'} stable The {@link typedoc-plugin-versions!versionsOptions.stable versions.stable} option from the typedoc config.
+ * @param {version | 'auto'} dev The {@link typedoc-plugin-versions!versionsOptions.dev versions.dev} option from the typedoc config.
+ * @returns {boolean} Whether the version is stale.
+ */
 export const isStale = (
     version: version,
     versions: readonly version[],
@@ -204,35 +259,82 @@ export const isStale = (
     isDev(version, dev) &&
     versions.some((v) => isStable(v, stable) && gt(v, version, true));
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to only those which are considered {@link isStale stale}.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version[]} versions The versions to filter.
+ * @param {string} out The path to the user's typedoc `out` folder.
+ * @param {version | 'auto'} stable The {@link typedoc-plugin-versions!versionsOptions.stable versions.stable} option from the typedoc config.
+ * @param {version | 'auto'} dev The {@link typedoc-plugin-versions!versionsOptions.dev versions.dev} option from the typedoc config.
+ * @returns {Promise<version[]>} The filtered array consisting only of {@link isStale stale} {@link typedoc-plugin-versions!version versions}.
+ */
 export const getStale = (
     versions: version[],
-    docsPath: string,
+    out: string,
     stable: version | 'auto',
     dev: version | 'auto'
 ): Promise<version[]> =>
     filter(
         versions,
         async (version) =>
-            (await isDir(resolve(join(docsPath, version)))) &&
+            (await isDir(resolve(join(out, version)))) &&
             isStale(version, versions, stable, dev)
     );
 
-export const isInfinite = (n: number): boolean =>
-    typeof n !== 'number' || !isFinite(n) || isNaN(n) || n < 0;
+/**
+ * Determines whether a number passed is valid, i.e. is finite, non-NaN and greater than or equal to 0.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {number} number The number.
+ * @returns Whether the number is valid.
+ */
+export const isValid = (number: number): boolean =>
+    typeof number === 'number' &&
+    isFinite(number) &&
+    !isNaN(number) &&
+    number >= 0;
 
-export const shouldPurge = (...nums: number[]): boolean =>
-    nums.some((n) => !isInfinite(n));
+/**
+ * Coerces a passed argument to a number. If the argument is an array of numbers, coerces only the last element.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {number | number[]} number
+ * @returns {number} The coerced number, or {@link typescript!Infinity Infinity} if the number was invalid.
+ */
+export const coercePurgeVersionsNum = (number: number | number[]): number =>
+    typeof number === 'number'
+        ? isValid(number)
+            ? number
+            : Infinity
+        : coercePurgeVersionsNum(number.at(-1) ?? Infinity);
 
+/**
+ * Determines whether a given {@link typedoc-plugin-versions!version version} should be excluded from purging based on
+ * the given {@link http://yargs.js.org yargs} `exclude` argument.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {version} version The version.
+ * @param {string[]} [exclude=[]] The {@link http://yargs.js.org yargs} `exclude` argument.
+ * @param {RangeOptions} [options=\{\}] Options to pass to {@link https://github.com/npm/node-semver#readme semver.satisfies}.
+ * @returns {boolean} Whether the version should be excluded from purging.
+ */
 export const shouldExclude = (
     version: version,
     exclude: string[] = [],
     options: RangeOptions = {}
 ): boolean => exclude.some((e) => satisfies(version, e, options));
-export const coercePurgeVersionsNum = (num: number | number[]) => {
-    num = typeof num === 'number' ? num : num.at(-1) ?? Infinity;
-    return shouldPurge(num) ? num : undefined;
-};
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
+ * based on whether they match a given array of semantic version ranges.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {readonly version[]} versions The versions to filter.
+ * @param {readonly string[]} [versionsToPurge=[]] The semantic version ranges to match.
+ * @param {RangeOptions} [options=\{\}] Options to pass to {@link https://github.com/npm/node-semver#readme semver.satisfies}.
+ * @returns {version[]} The filtered array consisting only of {@link typedoc-plugin-versions!version versions} which should be purged.
+ */
 export const getVersionsToPurge = (
     versions: readonly version[],
     versionsToPurge: readonly string[] = [],
@@ -243,6 +345,16 @@ export const getVersionsToPurge = (
     ),
 ];
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
+ * based on the given {@link http://yargs.js.org yargs} `major` argument.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {readonly version[]} versions The versions to filter.
+ * @param {number} number The {@link http://yargs.js.org yargs} `major` argument.
+ * @param {RangeOptions} [options=\{\}] Options to pass to {@link https://github.com/npm/node-semver#readme semver.satisfies}.
+ * @returns {version[]} The filtered array consisting only of {@link typedoc-plugin-versions!version versions} which should be purged.
+ */
 export function getMajorVersionsToPurge(
     versions: readonly version[],
     number: number,
@@ -258,6 +370,16 @@ export function getMajorVersionsToPurge(
     );
 }
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
+ * based on the given {@link http://yargs.js.org yargs} `minor` argument.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {readonly version[]} versions The versions to filter.
+ * @param {number} number The {@link http://yargs.js.org yargs} `minor` argument.
+ * @param {RangeOptions} [options=\{\}] Options to pass to {@link https://github.com/npm/node-semver#readme semver.satisfies}.
+ * @returns {version[]} The filtered array consisting only of {@link typedoc-plugin-versions!version versions} which should be purged.
+ */
 export function getMinorVersionsToPurge(
     versions: readonly version[],
     number: number,
@@ -278,6 +400,16 @@ export function getMinorVersionsToPurge(
     );
 }
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
+ * based on the given {@link http://yargs.js.org yargs} `patch` argument.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {readonly version[]} versions The versions to filter.
+ * @param {number} number The {@link http://yargs.js.org yargs} `patch` argument.
+ * @param {RangeOptions} [options=\{\}] Options to pass to {@link https://github.com/npm/node-semver#readme semver.satisfies}.
+ * @returns {version[]} The filtered array consisting only of {@link typedoc-plugin-versions!version versions} which should be purged.
+ */
 export function getPatchVersionsToPurge(
     versions: readonly version[],
     number: number,
@@ -298,6 +430,15 @@ export function getPatchVersionsToPurge(
     );
 }
 
+/**
+ * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
+ * based on whether or not {@link isStale they are stale}.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {readonly version[]} versions The versions to filter.
+ * @param {Options} options The parsed {@link index!Options Options} object.
+ * @returns {version[]} The filtered array consisting only of {@link typedoc-plugin-versions!version versions} which should be purged.
+ */
 export const getStaleVersionsToPurge = (
     versions: version[],
     options: Options
@@ -309,11 +450,18 @@ export const getStaleVersionsToPurge = (
         options.versions.dev
     );
 
-export const sliceValues = (
-    map: Map<string, string[]>,
-    number: number
-): string[][] =>
+/**
+ * Parses a given {@link typescript!Map Map}, filtering its values into unique values only, and returns them sliced by the given index.
+ * @internal
+ * Intended for internal use; may not be exported in future.
+ * @param {Map<K, V>} map The map.
+ * @param {number} index The index.
+ * @returns {V[][]} The map of values as an array.
+ * @typeParam K The type of the {@link typescript!Map Map}'s keys.
+ * @typeParam V The type of the {@link typescript!Map Map}'s values.
+ */
+export const sliceValues = <K, V>(map: Map<K, V[]>, index: number): V[][] =>
     [...map.values()].map(
         (value) =>
-            value.filter((v, i, s) => s.indexOf(v) === i).slice(number) ?? []
+            value.filter((v, i, s) => s.indexOf(v) === i).slice(index) ?? []
     );
