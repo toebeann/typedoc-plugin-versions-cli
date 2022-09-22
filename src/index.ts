@@ -27,6 +27,19 @@ export interface Options {
 }
 
 /**
+ * Type guard for determining whether a given object implements the {@link Options} interface.
+ * @param {unknown} obj The object.
+ * @returns {obj is Options} Whether the object implements the {@link Options} interface.
+ */
+export const isOptions = (obj: unknown): obj is Options =>
+    obj !== null &&
+    typeof obj === 'object' &&
+    'out' in obj &&
+    'versions' in obj &&
+    typeof (<Options>obj).out === 'string' &&
+    typeof (<Options>obj).versions === 'object';
+
+/**
  * The parsed {@link @types/yargs!yargs.Argv argv} which will be passed to a
  * {@link https://yargs.js.org/docs yargs} {@link https://yargs.js.org/docs/#api-reference-commandcmd-desc-builder-handler command's}
  * handler, its properties inferred from the builder used to compose the command.
@@ -52,12 +65,14 @@ export type refreshedMetadata = metadata & { versions: version[] } & (
  * {@link https://yargs.js.org/docs yargs} CLI builder.
  * @internal
  * Intended for internal use; may not be exported in future.
+ * @returns A new {@link https://yargs.js.org/docs yargs} instance with default options and commands.
  */
-export const cli = yargs(hideBin(argv))
-    .commandDir('./commands', { extensions: ['ts', 'js'] })
-    .strictCommands()
-    .demandCommand(1, '')
-    .help()
-    .version()
-    .alias('h', 'help')
-    .group(['help', 'version'], 'Help:');
+export const cli = () =>
+    yargs(hideBin(argv))
+        .commandDir('./commands', { extensions: ['ts', 'js'] })
+        .strictCommands()
+        .demandCommand(1, '')
+        .help()
+        .version()
+        .alias('h', 'help')
+        .group(['help', 'version'], 'Help:');

@@ -41,7 +41,7 @@ export async function getOptions<O extends typeof commonOptions>(
                 console.debug(
                     formatDiagnosticsWithColorAndContext([diagnostic], {
                         getCanonicalFileName: resolve,
-                        getCurrentDirectory: () => process.cwd(),
+                        getCurrentDirectory: () => cwd(),
                         getNewLine: () => sys.newLine,
                     })
                 ),
@@ -89,7 +89,7 @@ export async function getOut<O extends { out: typeof out }>(
 ): Promise<string> {
     if (args.out) return args.out;
     else if (isOptionsArgs(args)) return (await getOptions(args))?.out;
-    else throw new Error(`Could not parse 'out': ${JSON.stringify(args)}`);
+    else throw new Error(`Could not parse 'out'`);
 }
 
 /**
@@ -122,10 +122,7 @@ export function findTsConfigFile(path: string = cwd()): string {
 
     if (!file)
         throw new Error(
-            `File does not exist or is not a valid tsconfig: ${relative(
-                cwd(),
-                path
-            )}`
+            `Cannot find a valid tsconfig at path: ${relative(cwd(), path)}`
         );
 
     return resolve(file);
@@ -155,7 +152,11 @@ export async function findFile(
         isFile
     );
 
-    if (!file) throw new Error(`File does not exist: ${relative(cwd(), path)}`);
+    if (!file && path === cwd() && filePaths.length === 0)
+        throw new Error(
+            'filePaths must contain at least one file path when path is a directory!'
+        );
+    else if (!file) throw new Error(`A matching file could not be found.`);
 
     return resolve(file);
 }
@@ -249,15 +250,15 @@ export function drop<T>(array: T[], predicate: (value: T) => boolean): T[];
  * @typeParam U The type of the elements in the array of elements to remove.
  * @see {@link exclude}
  */
-export function drop<T, U extends T>(array: T[], elements: readonly U[]): T[];
-export function drop<T, U extends T>(
+export function drop<T extends U, U>(array: T[], elements: readonly U[]): T[];
+export function drop<T extends U, U>(
     array: T[],
     elementsOrPredicate: readonly U[] | ((value: T) => boolean)
 ): T[] {
     const toBeDropped =
         typeof elementsOrPredicate === 'function'
             ? array.filter(elementsOrPredicate)
-            : elementsOrPredicate;
+            : array.filter((v) => elementsOrPredicate.includes(v));
 
     const dropped = [];
     for (const value of toBeDropped) {

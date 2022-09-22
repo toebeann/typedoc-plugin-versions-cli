@@ -1,4 +1,5 @@
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { findFile, findTsConfigFile, isDir } from '../utils';
 
 /**
@@ -17,7 +18,9 @@ export const out = {
         );
 
         if (!(await isDir(path)))
-            throw new Error(`Directory does not exist: ${path}`);
+            throw new Error(
+                `Directory does not exist: ${relative(cwd(), path)}`
+            );
 
         return path;
     },
