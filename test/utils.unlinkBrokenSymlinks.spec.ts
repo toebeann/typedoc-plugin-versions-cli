@@ -1,12 +1,4 @@
-import {
-    ensureSymlink,
-    ensureDir,
-    rm,
-    unlink,
-    stat,
-    lstat,
-    readlink,
-} from 'fs-extra';
+import { ensureSymlink, ensureDir, rm, stat, lstat, readlink } from 'fs-extra';
 import { join, resolve } from 'node:path';
 
 import { unlinkBrokenSymlinks } from '../src/utils';
@@ -29,7 +21,6 @@ describe('when dir points to a file', () => {
 describe('when dir points to an empty directory', () => {
     const dir = resolve(join(testDir, 'foo'));
     beforeAll(async () => await ensureDir(dir));
-    afterAll(async () => await rm(dir, { recursive: true, force: true }));
 
     test('should complete normally', () => {
         expect(unlinkBrokenSymlinks(testDir)).resolves.not.toThrow();
@@ -44,10 +35,6 @@ describe('when dir points to a directory containing valid symlinks', () => {
     beforeAll(async () => {
         await ensureDir(src);
         await ensureSymlink(src, target, 'junction');
-    });
-    afterAll(async () => {
-        await unlink(target);
-        await rm(dir, { recursive: true, force: true });
     });
 
     test('should complete normally without deleting any symlinks', async () => {
@@ -68,9 +55,6 @@ describe('when dir points to a directory containing invalid symlinks', () => {
         await ensureDir(src);
         await ensureSymlink(src, target, 'junction');
         await rm(src, { recursive: true, force: true });
-    });
-    afterAll(async () => {
-        await rm(dir, { recursive: true, force: true });
     });
 
     test('should complete and to have removed the broken symlink', async () => {

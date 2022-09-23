@@ -1,4 +1,4 @@
-import { ensureSymlink, ensureDir, rm, unlink } from 'fs-extra';
+import { ensureSymlink, ensureDir, rm } from 'fs-extra';
 import { join, resolve } from 'node:path';
 
 import { isSymlink } from '../src/utils';
@@ -28,11 +28,6 @@ describe('when path points to a valid symbolic link', () => {
         await ensureSymlink(src, target, 'junction');
     });
 
-    afterAll(async () => {
-        await unlink(target);
-        await rm(src, { recursive: true, force: true });
-    });
-
     test('should return false', async () => {
         expect(await isSymlink(target)).toBe(true);
     });
@@ -46,10 +41,6 @@ describe('when path points to a broken symbolic link', () => {
         await ensureDir(src);
         await ensureSymlink(src, target, 'junction');
         await rm(src, { recursive: true, force: true });
-    });
-
-    afterAll(async () => {
-        await unlink(target);
     });
 
     test('should return false', async () => {
