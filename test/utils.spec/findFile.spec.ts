@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 
-import { findFile } from '../src/utils';
+import { findFile } from '../../src/utils';
 
 describe('when path = undefined & filePaths = undefined', () => {
     test('should throw Error', async () => {

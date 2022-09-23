@@ -1,6 +1,6 @@
 import { EOL } from 'node:os';
 import { join, relative, resolve } from 'node:path';
-import { cwd, exit } from 'node:process';
+import process, { cwd } from 'node:process';
 import { each } from 'async';
 import { metadata } from 'typedoc-plugin-versions';
 import {
@@ -65,7 +65,8 @@ export async function handler<T extends Args<typeof builder>>(
         console.error(
             `Missing docs for package.json version: ${packageVersion}${EOL}Did you forget to run typedoc?`
         );
-        exit(1);
+        process.exitCode = 1;
+        return;
     }
 
     const changes = await getDiffs(options.out, metadata, refreshedMetadata);
