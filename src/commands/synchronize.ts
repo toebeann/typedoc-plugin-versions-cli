@@ -224,7 +224,8 @@ export const refreshVersionJs = (
  * @returns {string} The generated `index.html` string.
  */
 export const refreshIndexHtml = (metadata: refreshedMetadata): string =>
-    `<meta http-equiv="refresh" content="0; url=${metadata.stable ? 'stable' : 'dev'
+    `<meta http-equiv="refresh" content="0; url=${
+        metadata.stable ? 'stable' : 'dev'
     }"/>`;
 
 /**
