@@ -40,6 +40,11 @@
     "cid"
   ],
   "author": "Tobey Blaber (https://github.com/toebeann)",
+  "homepage": "https://toebeann.github.io/typedoc-plugin-versions-cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toebeann/typedoc-plugin-versions-cli.git"
+  },
   "funding": [
     {
       "type": "github",
