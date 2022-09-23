@@ -5,7 +5,6 @@ import {
     pathExists,
     pathExistsSync,
     stat,
-    statSync,
     lstat,
     readdir,
     readJson,
@@ -54,9 +53,9 @@ export async function getOptions<O extends typeof commonOptions>(
     // now attempt to discern the typedoc out docs from the given configs and command line args, reverting to './docs' if not specified
     const out = resolve(
         args.out ??
-            typedoc.out ??
-            tsconfig?.raw.typedocOptions?.out ??
-            join(cwd(), 'docs')
+        typedoc.out ??
+        tsconfig?.raw.typedocOptions?.out ??
+        join(cwd(), 'docs')
     );
 
     // check directory exists and throw if not
@@ -118,7 +117,7 @@ export function findTsConfigFile(path: string = cwd()): string {
     if (!pathExistsSync(path))
         throw new Error(`Path does not exist: ${relative(cwd(), path)}`);
 
-    const file = findConfigFile(path, isFileSync);
+    const file = findConfigFile(path, sys.fileExists);
 
     if (!file)
         throw new Error(
@@ -160,15 +159,6 @@ export async function findFile(
 
     return resolve(file);
 }
-
-/**
- * Determines whether a given path is a file.
- * @param {string} path The path.
- * @returns {boolean} Whether the path is a file.
- * @deprecated Use {@link isFile} wherever possible.
- */
-export const isFileSync = (path: string): boolean =>
-    statSync(path, { throwIfNoEntry: false })?.isFile() ?? false;
 
 /**
  * Determines whether a given path is a file.
