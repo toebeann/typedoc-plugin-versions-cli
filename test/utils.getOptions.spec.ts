@@ -65,7 +65,6 @@ describe('local package', () => {
 
     describe('when `--out foo`', () => {
         test('should throw Error', async () => {
-            expect.assertions(1);
             try {
                 await getOptions(
                     await cli()
@@ -73,6 +72,7 @@ describe('local package', () => {
                         .demandCommand(0)
                         .parse('--out foo')
                 );
+                fail('must throw');
             } catch (e) {
                 expect(e).toEqual(new Error('Directory does not exist: foo'));
             }
@@ -135,7 +135,6 @@ describe('local package', () => {
 
     describe('when `--tsconfig ./foobar`', () => {
         test('should throw Error', async () => {
-            expect.assertions(1);
             try {
                 await getOptions(
                     await cli()
@@ -143,6 +142,7 @@ describe('local package', () => {
                         .demandCommand(0)
                         .parse('--tsconfig ./foobar')
                 );
+                fail('must throw');
             } catch (e) {
                 expect(e).toEqual(new Error('Path does not exist: foobar'));
             }
@@ -205,7 +205,6 @@ describe('local package', () => {
 
     describe('when `--typedoc ./bar`', () => {
         test('should throw Error', async () => {
-            expect.assertions(1);
             try {
                 await getOptions(
                     await cli()
@@ -213,6 +212,7 @@ describe('local package', () => {
                         .demandCommand(0)
                         .parse('--typedoc ./bar')
                 );
+                fail('must throw');
             } catch (e) {
                 expect(e).toEqual(new Error('Path does not exist: bar'));
             }

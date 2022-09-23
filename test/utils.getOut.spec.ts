@@ -24,11 +24,11 @@ describe('local package', () => {
 
         describe('when parsing only `out`', () => {
             test('should throw Error', async () => {
-                expect.assertions(1);
                 try {
                     await getOut(
                         await cli().options({ out }).demandCommand(0).parse()
                     );
+                    fail('must throw');
                 } catch (e) {
                     expect(e).toEqual(new Error("Could not parse 'out'"));
                 }

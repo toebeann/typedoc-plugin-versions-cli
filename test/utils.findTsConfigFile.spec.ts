@@ -17,9 +17,9 @@ describe('when path = "./tsconfig.json"', () => {
 
 describe('when path = "./foo"', () => {
     test('should throw Error', () => {
-        expect.assertions(1);
         try {
             findTsConfigFile('./foo');
+            fail('must throw');
         } catch (e) {
             expect(e).toEqual(new Error('Path does not exist: foo'));
         }
@@ -28,9 +28,9 @@ describe('when path = "./foo"', () => {
 
 describe('when path = "../"', () => {
     test('should throw Error', () => {
-        expect.assertions(1);
         try {
             findTsConfigFile('../');
+            fail('must throw');
         } catch (e) {
             expect(e).toEqual(
                 new Error('Cannot find a valid tsconfig at path: ..')

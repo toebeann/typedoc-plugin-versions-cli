@@ -5,9 +5,9 @@ import { findFile } from '../src/utils';
 
 describe('when path = undefined & filePaths = undefined', () => {
     test('should throw Error', async () => {
-        expect.assertions(1);
         try {
             await findFile();
+            fail('must throw');
         } catch (e) {
             expect(e).toEqual(
                 new Error(
@@ -36,9 +36,9 @@ describe('when path = undefined & filePaths = ["foo.bar", "typedoc.json"]', () =
 
 describe('when path = undefined & filePaths = ["foo.bar"]', () => {
     test('should throw Error', async () => {
-        expect.assertions(1);
         try {
             await findFile(undefined, ['foo.bar']);
+            fail('must throw');
         } catch (e) {
             expect(e).toEqual(new Error('A matching file could not be found.'));
         }
@@ -55,9 +55,9 @@ describe('when path = "typedoc.json"', () => {
 
 describe('when path = "foo.bar"', () => {
     test('should throw Error', async () => {
-        expect.assertions(1);
         try {
             await findFile('foo.bar');
+            fail('must throw');
         } catch (e) {
             expect(e).toEqual(new Error('Path does not exist: foo.bar'));
         }
