@@ -77,7 +77,7 @@ npx tpv <command> [options..]
 
 #### purge
 
-Deletes old doc builds and/or versions matching semver ranges.
+Deletes old doc builds and/or versions matching semver ranges. To synchronize metadata and symbolic links after, run [`tpv sync`](#synchronize).
 
 ```text
 tpv purge [versions..] [flags]
