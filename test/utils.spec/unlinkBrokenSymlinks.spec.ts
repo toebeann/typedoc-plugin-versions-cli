@@ -1,11 +1,11 @@
-import { ensureSymlink, ensureDir, rm, stat, lstat, readlink } from 'fs-extra';
 import { join, resolve } from 'node:path';
+import { ensureSymlink, ensureDir, rm, stat, lstat, readlink } from 'fs-extra';
 
-import { unlinkBrokenSymlinks } from '../src/utils';
+import { unlinkBrokenSymlinks } from '../../src/utils';
 
 const testDir = resolve(join('test', '.utils.unlinkBrokenSymlinks'));
-beforeAll(async () => await ensureDir(testDir));
-afterAll(async () => await rm(testDir, { recursive: true, force: true }));
+beforeAll(() => ensureDir(testDir));
+afterAll(() => rm(testDir, { recursive: true, force: true }));
 
 describe('when dir points to a file', () => {
     test('should throw error', async () => {
@@ -20,7 +20,7 @@ describe('when dir points to a file', () => {
 
 describe('when dir points to an empty directory', () => {
     const dir = resolve(join(testDir, 'foo'));
-    beforeAll(async () => await ensureDir(dir));
+    beforeAll(() => ensureDir(dir));
 
     test('should complete normally', () => {
         expect(unlinkBrokenSymlinks(testDir)).resolves.not.toThrow();

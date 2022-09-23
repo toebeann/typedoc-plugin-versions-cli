@@ -1,11 +1,11 @@
-import { ensureSymlink, ensureDir, rm } from 'fs-extra';
 import { join, resolve } from 'node:path';
+import { ensureSymlink, ensureDir, rm } from 'fs-extra';
 
-import { isSymlink } from '../src/utils';
+import { isSymlink } from '../../src/utils';
 
 const testDir = resolve(join('test', '.utils.isSymlink'));
-beforeAll(async () => await ensureDir(testDir));
-afterAll(async () => await rm(testDir, { recursive: true, force: true }));
+beforeAll(() => ensureDir(testDir));
+afterAll(() => rm(testDir, { recursive: true, force: true }));
 
 describe('when path points to a file', () => {
     test('should return false', async () => {

@@ -1,9 +1,9 @@
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
-import { cli } from '../src';
-import { commonOptions, out } from '../src/commands/builders';
+import { cli } from '../../src';
+import { commonOptions, out } from '../../src/commands/builders';
 
-import { getOut } from '../src/utils';
+import { getOut } from '../../src/utils';
 
 describe('local package', () => {
     const dir = cwd();

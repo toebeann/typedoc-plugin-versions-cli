@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 
-import { findTsConfigFile } from '../src/utils';
+import { findTsConfigFile } from '../../src/utils';
 
 describe('when path = undefined', () => {
     test('should find local package tsconfig.json', () => {

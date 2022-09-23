@@ -1,4 +1,4 @@
-import { drop } from '../src/utils';
+import { drop } from '../../src/utils';
 
 describe('using predicate', () => {
     describe('when array = [-3, -2, -1, 0, 1, 2, 3] & predicate = (v) => v < 0)', () => {

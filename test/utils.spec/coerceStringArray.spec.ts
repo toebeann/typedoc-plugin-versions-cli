@@ -1,4 +1,4 @@
-import { coerceStringArray } from '../src/utils';
+import { coerceStringArray } from '../../src/utils';
 
 describe('when array = []', () => {
     test('should return []', () => {
