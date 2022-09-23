@@ -6,13 +6,16 @@ import { getSemanticVersion } from 'typedoc-plugin-versions/src/etc/utils';
 
 import { cli } from '../../../src';
 
-const testDir = resolve(join('test', '.commands.sync.handler'));
-beforeAll(() => ensureDir(testDir));
-afterAll(() => rm(testDir, { recursive: true, force: true }));
+const out = resolve(join('test', '.commands.sync.handler'));
+let consoleLogMock: jest.SpyInstance;
+let consoleErrorMock: jest.SpyInstance;
+let consoleTimeMock: jest.SpyInstance;
+let consoleTimeEndMock: jest.SpyInstance;
+
+beforeAll(() => ensureDir(out));
+afterAll(() => rm(out, { recursive: true, force: true }));
 
 describe('when `out` points to empty directory', () => {
-    let consoleErrorMock: jest.SpyInstance;
-
     beforeEach(
         () =>
             (consoleErrorMock = jest
@@ -22,7 +25,7 @@ describe('when `out` points to empty directory', () => {
     afterEach(() => consoleErrorMock.mockRestore());
 
     test('should error: Missing docs for package.json version...', async () => {
-        await cli().parse(`sync --out ${testDir}`);
+        await cli().parse(`sync --out ${out}`);
         expect(console.error).toHaveBeenCalledTimes(1);
         expect(console.error).toHaveBeenCalledWith(
             `Missing docs for package.json version: ${getSemanticVersion()}${EOL}Did you forget to run typedoc?`
@@ -31,7 +34,7 @@ describe('when `out` points to empty directory', () => {
 });
 
 describe('when `out` contains package.json version docs', () => {
-    const dir = join(testDir, 'foo');
+    const dir = join(out, 'foo');
     const packageVersionDocs = resolve(join(dir, getSemanticVersion()));
 
     beforeEach(() => ensureDir(packageVersionDocs));
@@ -39,10 +42,6 @@ describe('when `out` contains package.json version docs', () => {
 
     describe('when metadata out of date', () => {
         describe('when user chooses "no"', () => {
-            let consoleLogMock: jest.SpyInstance;
-            let consoleTimeMock: jest.SpyInstance;
-            let consoleTimeEndMock: jest.SpyInstance;
-
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
@@ -81,10 +80,6 @@ describe('when `out` contains package.json version docs', () => {
         });
 
         describe('when user chooses "yes"', () => {
-            let consoleLogMock: jest.SpyInstance;
-            let consoleTimeMock: jest.SpyInstance;
-            let consoleTimeEndMock: jest.SpyInstance;
-
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
@@ -114,10 +109,6 @@ describe('when `out` contains package.json version docs', () => {
         });
 
         describe('when user passes -y', () => {
-            let consoleLogMock: jest.SpyInstance;
-            let consoleTimeMock: jest.SpyInstance;
-            let consoleTimeEndMock: jest.SpyInstance;
-
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
@@ -147,10 +138,6 @@ describe('when `out` contains package.json version docs', () => {
     });
 
     describe('when metadata up-to-date', () => {
-        let consoleLogMock: jest.SpyInstance;
-        let consoleTimeMock: jest.SpyInstance;
-        let consoleTimeEndMock: jest.SpyInstance;
-
         beforeEach(async () => {
             consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
             consoleTimeMock = jest.spyOn(console, 'time').mockImplementation();
