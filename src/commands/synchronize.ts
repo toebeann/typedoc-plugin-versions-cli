@@ -134,7 +134,7 @@ export interface labelledDiff {
     /**
      * A callback which saves the changes.
      */
-    save: (() => void) | (() => Promise<void>);
+    save: () => Promise<void>;
 }
 
 /**
@@ -162,7 +162,7 @@ export async function getDiffs(
         {
             diff: getMetadataDiff(metadata, refreshedMetadata),
             label: relative(cwd(), getMetadataPath(out)),
-            save: () => saveMetadata(refreshedMetadata, out),
+            save: async () => saveMetadata(refreshedMetadata, out),
         },
         {
             diff: diff(
