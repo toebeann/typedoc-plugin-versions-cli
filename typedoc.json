@@ -1,5 +1,41 @@
 {
-  "entryPoints": "src",
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
   "entryPointStrategy": "expand",
-  "includeVersion": true
+  "includeVersion": true,
+  "externalSymbolLinkMappings": {
+    "typescript": {
+      "Error": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+      "Infinity": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
+      "Map": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+      "Required": "https://www.typescriptlang.org/docs/handbook/utility-types.html#requiredtype"
+    },
+    "node:process": {
+      "cwd": "https://nodejs.org/docs/latest/api/process.html#process_process_cwd"
+    },
+    "cli-diff": {
+      "diff": "https://github.com/j-f1/cli-diff#usage"
+    },
+    "@types/semver": {
+      "RangeOptions": "https://github.com/npm/node-semver#readme"
+    },
+    "typedoc-plugin-versions": {
+      "metadata": "https://citkane.github.io/typedoc-plugin-versions/stable/types/metadata.html",
+      "version": "https://citkane.github.io/typedoc-plugin-versions/dev/types/version.html",
+      "versionsOptions": "https://citkane.github.io/typedoc-plugin-versions/stable/interfaces/versionsOptions.html",
+      "versionsOptions.stable": "https://citkane.github.io/typedoc-plugin-versions/dev/interfaces/versionsOptions.html#stable",
+      "versionsOptions.dev": "https://citkane.github.io/typedoc-plugin-versions/dev/interfaces/versionsOptions.html#dev"
+    },
+    "typedoc-plugin-versions/etc/utils": {
+      "refreshMetadata": "https://citkane.github.io/typedoc-plugin-versions/dev/functions/utils.refreshMetadata.html"
+    },
+    "@types/yargs": {
+      "yargs.Argv": "https://yargs.js.org/docs/#api-reference-argv",
+      "yargs.ArgumentsCamelCase": "https://yargs.js.org/docs/#api-reference-argv",
+      "yargs.Options": "https://yargs.js.org/docs/#api-reference-optionskey-opt",
+      "yargs.InferredOptionTypes": "https://yargs.js.org/docs/#api-reference-optionskey-opt"
+    }
+  },
+  "exclude": ["src/cli.ts"]
 }
