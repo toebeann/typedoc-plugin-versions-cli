@@ -1,6 +1,6 @@
 {
   "name": "typedoc-plugin-versions-cli",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
