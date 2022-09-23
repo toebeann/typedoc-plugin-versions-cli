@@ -260,29 +260,6 @@ export const isStale = (
     versions.some((v) => isStable(v, stable) && gt(v, version, true));
 
 /**
- * Filters an array of {@link typedoc-plugin-versions!version versions} to only those which are considered {@link isStale stale}.
- * @internal
- * Intended for internal use; may not be exported in future.
- * @param {version[]} versions The versions to filter.
- * @param {string} out The path to the user's typedoc `out` folder.
- * @param {version | 'auto'} stable The {@link typedoc-plugin-versions!versionsOptions.stable versions.stable} option from the typedoc config.
- * @param {version | 'auto'} dev The {@link typedoc-plugin-versions!versionsOptions.dev versions.dev} option from the typedoc config.
- * @returns {Promise<version[]>} The filtered array consisting only of {@link isStale stale} {@link typedoc-plugin-versions!version versions}.
- */
-export const getStale = (
-    versions: version[],
-    out: string,
-    stable: version | 'auto',
-    dev: version | 'auto'
-): Promise<version[]> =>
-    filter(
-        versions,
-        async (version) =>
-            (await isDir(resolve(join(out, version)))) &&
-            isStale(version, versions, stable, dev)
-    );
-
-/**
  * Determines whether a number passed is valid, i.e. is finite, non-NaN and greater than or equal to 0.
  * @internal
  * Intended for internal use; may not be exported in future.
@@ -443,11 +420,16 @@ export const getStaleVersionsToPurge = (
     versions: version[],
     options: Options
 ): Promise<version[]> =>
-    getStale(
+    filter(
         versions,
-        options.out,
-        options.versions.stable,
-        options.versions.dev
+        async (version) =>
+            (await isDir(resolve(join(options.out, version)))) &&
+            isStale(
+                version,
+                versions,
+                options.versions.stable,
+                options.versions.dev
+            )
     );
 
 /**
@@ -461,7 +443,6 @@ export const getStaleVersionsToPurge = (
  * @typeParam V The type of the {@link typescript!Map Map}'s values.
  */
 export const sliceValues = <K, V>(map: Map<K, V[]>, index: number): V[][] =>
-    [...map.values()].map(
-        (value) =>
-            value.filter((v, i, s) => s.indexOf(v) === i).slice(index) ?? []
+    [...map.values()].map((value) =>
+        value.filter((v, i, s) => s.indexOf(v) === i).slice(index)
     );
