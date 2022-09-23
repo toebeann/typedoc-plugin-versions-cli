@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        version: [16]
+        version: [16, 14]
 
     steps:
       - name: Checkout repository
