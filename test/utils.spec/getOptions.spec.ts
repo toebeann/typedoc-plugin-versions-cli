@@ -106,13 +106,13 @@ describe('local package', () => {
         });
     });
 
-    describe('when `--tsconfig="./tsconfig.json"`', () => {
+    describe('when `--tsconfig="tsconfig.json"`', () => {
         beforeAll(async () => {
             options = await getOptions(
                 await cli()
                     .options({ ...commonOptions })
                     .demandCommand(0)
-                    .parse('--tsconfig="./tsconfig.json"')
+                    .parse('--tsconfig="tsconfig.json"')
             );
         });
 
@@ -176,13 +176,13 @@ describe('local package', () => {
         });
     });
 
-    describe('when `--typedoc=./typedoc.json`', () => {
+    describe('when `--typedoc=typedoc.json`', () => {
         beforeAll(async () => {
             options = await getOptions(
                 await cli()
                     .options({ ...commonOptions })
                     .demandCommand(0)
-                    .parse('--typedoc=./typedoc.json')
+                    .parse('--typedoc=typedoc.json')
             );
         });
 
