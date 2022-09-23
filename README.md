@@ -67,7 +67,7 @@ tpv purge --no-stale
 tpv purge --stale false
 ```
 
-On Windows, you may need to prefix the commands with `npx `, e.g.:
+On Windows, you may need to prefix the commands with `npx`, e.g.:
 
 ```text
 npx tpv <command> [options..]
