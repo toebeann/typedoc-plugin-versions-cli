@@ -48,6 +48,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Shrinkwrap
+        run: npm shrinkwrap
+
       - name: Publish to npm 🚀
         uses: JS-DevTools/npm-publish@v1
         with:
