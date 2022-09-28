@@ -28,10 +28,14 @@ A companion CLI tool for working with [typedoc-plugin-versions](https://citkane.
 
 ## Install
 
-### [npm](https://www.npmjs.com/package/toebean/typedoc-plugin-versions-cli "npm is a package manager for JavaScript")
+### [npm](https://www.npmjs.com/package/typedoc-plugin-versions-cli "npm is a package manager for JavaScript")
 
 ```text
-npm i -D typedoc-plugin-versions-cli typedoc-plugin-versions
+npm i --global typedoc-plugin-versions-cli
+```
+
+```text
+npm i -D typedoc-plugin-versions-cli
 ```
 
 ## Usage
@@ -67,7 +71,7 @@ tpv purge --no-stale
 tpv purge --stale false
 ```
 
-On Windows, you may need to prefix the commands with `npx`, e.g.:
+When installing as a local dev dependency, you may need to prefix the commands with `npx`, e.g.:
 
 ```text
 npx tpv <command> [options..]
