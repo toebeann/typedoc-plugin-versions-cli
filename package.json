@@ -1,6 +1,6 @@
 {
   "name": "typedoc-plugin-versions-cli",
-  "version": "0.1.4",
+  "version": "0.1.5-alpha.1",
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
@@ -20,7 +20,7 @@
     "prebuild": "npm run format",
     "docs": "typedoc",
     "postdocs": "npm run docs:purge",
-    "docs:purge": "npm run tpv purge -- -y",
+    "docs:purge": "npm run tpv purge -- -y --patch 3",
     "postdocs:purge": "npm run docs:sync",
     "docs:sync": "npm run tpv sync -- -y --symlinks",
     "tpv": "ts-node src/cli.ts",

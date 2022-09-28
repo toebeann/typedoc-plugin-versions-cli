@@ -2,7 +2,7 @@
 
 # typedoc-plugin-versions-cli 🧑‍💻
 
-A companion CLI tool for working with [typedoc-plugin-versions](https://citkane.github.io/typedoc-plugin-versions).
+A companion CLI tool for [typedoc-plugin-versions](https://citkane.github.io/typedoc-plugin-versions).
 
 [![npm package version](https://img.shields.io/npm/v/typedoc-plugin-versions-cli.svg?logo=npm&label&labelColor=222&style=flat-square)](https://npmjs.org/package/typedoc-plugin-versions-cli "View typedoc-plugin-versions-cli on npm") [![npm package downloads](https://img.shields.io/npm/dw/typedoc-plugin-versions-cli.svg?logo=npm&labelColor=222&style=flat-square)](https://npmjs.org/package/typedoc-plugin-versions-cli "View typedoc-plugin-versions-cli on npm") [![typedocs](https://img.shields.io/badge/docs-informational.svg?logo=typescript&labelColor=222&style=flat-square)](https://toebeann.github.io/typedoc-plugin-versions-cli "Read the documentation on Github Pages") [![coverage](https://img.shields.io/codecov/c/github/toebeann/typedoc-plugin-versions-cli.svg?logo=codecov&labelColor=222&style=flat-square)](https://codecov.io/gh/toebeann/typedoc-plugin-versions-cli "View code coverage on Codecov") [![code quality](https://img.shields.io/codefactor/grade/github/toebeann/typedoc-plugin-versions-cli.svg?logo=codefactor&labelColor=222&style=flat-square)](https://www.codefactor.io/repository/github/toebeann/typedoc-plugin-versions-cli "View code quality on CodeFactor") [![license](https://img.shields.io/github/license/toebeann/typedoc-plugin-versions-cli.svg?color=informational&labelColor=222&style=flat-square)](https://github.com/toebeann/typedoc-plugin-versions-cli/blob/main/LICENSE "View the license on GitHub")
 

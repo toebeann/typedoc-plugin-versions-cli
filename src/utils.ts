@@ -25,7 +25,7 @@ import { Options, Args } from './';
  * @param {Args<O>} args Command line arguments passed to the application.
  * @returns {Promise<Options>} The parsed {@link index!Options Options} object.
  * @typeParam O An object extending the {@link commands/builders!commonOptions commonOptions} object.
- * @throws {@link typescript!Error Error} When the `out` option points to a directory which does not exist.
+ * @throws {@link !Error Error} When the `out` option points to a directory which does not exist.
  */
 export async function getOptions<O extends typeof commonOptions>(
     args: Args<O>
@@ -81,7 +81,7 @@ export async function getOptions<O extends typeof commonOptions>(
  * @param {Args<O>} args Command line arguments passed to the application.
  * @returns {Promise<string>} The parsed {@link commands/builders!out out} option.
  * @typeParam O An object extending a relevant subset of the {@link commands/builders!commonOptions commonOptions} object.
- * @throws {@link typescript!Error Error} when the `out` option could not be found.
+ * @throws {@link !Error Error} when the `out` option could not be found.
  */
 export async function getOut<O extends { out: typeof out }>(
     args: Args<O>
@@ -109,7 +109,7 @@ export const isOptionsArgs = (
  * @param {string} [path=cwd()] The path to the tsconfig or a directory containing it.
  * Defaults to {@link node:process!cwd process.cwd()}.
  * @returns {string} The fully resolved path to the tsconfig file if found.
- * @throws {@link typescript!Error Error} if the path does not exist or tsconfig file is invalid or not found.
+ * @throws {@link !Error Error} if the path does not exist or tsconfig file is invalid or not found.
  */
 export function findTsConfigFile(path: string = cwd()): string {
     path = resolve(path);
@@ -135,7 +135,7 @@ export function findTsConfigFile(path: string = cwd()): string {
  * Defaults to {@link node:process!cwd process.cwd()}.
  * @param {readonly string[]} [filePaths=[]] An array of file paths to search for when `path` is a directory.
  * @returns {Promise<string>} The fully resolved path to the file if found.
- * @throws {@link typescript!Error Error} if the path does not exist or the file was not found.
+ * @throws {@link !Error Error} if the path does not exist or the file was not found.
  */
 export async function findFile(
     path: string = cwd(),
