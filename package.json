@@ -1,6 +1,6 @@
 {
   "name": "typedoc-plugin-versions-cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
@@ -37,9 +37,7 @@
     "ci-cd",
     "ci",
     "cd",
-    "cid",
-    "typedoc-plugin",
-    "typedocplugin"
+    "cid"
   ],
   "author": "Tobey Blaber (https://github.com/toebeann)",
   "homepage": "https://toebeann.github.io/typedoc-plugin-versions-cli",
