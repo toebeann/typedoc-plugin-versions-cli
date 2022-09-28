@@ -53,9 +53,9 @@ export async function getOptions<O extends typeof commonOptions>(
     // now attempt to discern the typedoc out docs from the given configs and command line args, reverting to './docs' if not specified
     const out = resolve(
         args.out ??
-        typedoc.out ??
-        tsconfig?.raw.typedocOptions?.out ??
-        join(cwd(), 'docs')
+            typedoc.out ??
+            tsconfig?.raw.typedocOptions?.out ??
+            join(cwd(), 'docs')
     );
 
     // check directory exists and throw if not

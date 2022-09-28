@@ -317,10 +317,10 @@ export const getVersionsToPurge = (
     versionsToPurge: readonly string[] = [],
     options: RangeOptions = {}
 ): version[] => [
-        ...versions.filter((version) =>
-            versionsToPurge.some((v) => satisfies(version, v, options))
-        ),
-    ];
+    ...versions.filter((version) =>
+        versionsToPurge.some((v) => satisfies(version, v, options))
+    ),
+];
 
 /**
  * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
