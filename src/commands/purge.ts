@@ -277,7 +277,7 @@ export const isValid = (number: number): boolean =>
  * @internal
  * Intended for internal use; may not be exported in future.
  * @param {number | number[]} number
- * @returns {number} The coerced number, or {@link typescript!Infinity Infinity} if the number was invalid.
+ * @returns {number} The coerced number, or {@link !Infinity `Infinity`} if the number was invalid.
  */
 export const coercePurgeVersionsNum = (number: number | number[]): number =>
     typeof number === 'number'
@@ -317,10 +317,10 @@ export const getVersionsToPurge = (
     versionsToPurge: readonly string[] = [],
     options: RangeOptions = {}
 ): version[] => [
-    ...versions.filter((version) =>
-        versionsToPurge.some((v) => satisfies(version, v, options))
-    ),
-];
+        ...versions.filter((version) =>
+            versionsToPurge.some((v) => satisfies(version, v, options))
+        ),
+    ];
 
 /**
  * Filters an array of {@link typedoc-plugin-versions!version versions} to those which should be purged,
@@ -433,14 +433,14 @@ export const getStaleVersionsToPurge = (
     );
 
 /**
- * Parses a given {@link typescript!Map Map}, filtering its values into unique values only, and returns them sliced by the given index.
+ * Parses a given {@link !Map Map}, filtering its values into unique values only, and returns them sliced by the given index.
  * @internal
  * Intended for internal use; may not be exported in future.
  * @param {Map<K, V>} map The map.
  * @param {number} index The index.
  * @returns {V[][]} The map of values as an array.
- * @typeParam K The type of the {@link typescript!Map Map}'s keys.
- * @typeParam V The type of the {@link typescript!Map Map}'s values.
+ * @typeParam K The type of the {@link !Map Map}'s keys.
+ * @typeParam V The type of the {@link !Map Map}'s values.
  */
 export const sliceValues = <K, V>(map: Map<K, V[]>, index: number): V[][] =>
     [...map.values()].map((value) =>
