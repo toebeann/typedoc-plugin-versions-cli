@@ -25,10 +25,10 @@ jobs:
       - name: Clean up gh-pages
         run: rm -rf gh-pages
 
-      - name: Setup node.js @ 16
+      - name: Setup node.js @ lts
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: lts/*
 
       - name: Get npm cache directory
         id: npm-cache
