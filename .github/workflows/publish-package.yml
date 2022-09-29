@@ -12,10 +12,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup node.js @ 16
+      - name: Setup node.js @ lts
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: lts/*
 
       - name: Get npm cache directory
         id: npm-cache
@@ -47,9 +47,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Shrinkwrap
-        run: npm shrinkwrap
 
       - name: Publish to npm 🚀
         uses: JS-DevTools/npm-publish@v1
