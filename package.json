@@ -1,6 +1,6 @@
 {
   "name": "typedoc-plugin-versions-cli",
-  "version": "0.1.5-alpha.1.1",
+  "version": "0.1.5-alpha.2",
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
@@ -78,7 +78,7 @@
     "yargs": "^17.5.1"
   },
   "devDependencies": {
-    "@tsconfig/node14": "^1.0.3",
+    "@tsconfig/node16": "^1.0.3",
     "@types/async": "^3.2.15",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^29.0.3",
