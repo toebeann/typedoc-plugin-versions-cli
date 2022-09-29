@@ -40,7 +40,7 @@ export const isOptions = (obj: unknown): obj is Options =>
     typeof (<Options>obj).versions === 'object';
 
 /**
- * The parsed {@link @types/yargs!yargs.Argv argv} which will be passed to a
+ * The parsed {@link yargs!yargs.Argv argv} which will be passed to a
  * {@link https://yargs.js.org/docs yargs} {@link https://yargs.js.org/docs/#api-reference-commandcmd-desc-builder-handler command's}
  * handler, its properties inferred from the builder used to compose the command.
  * @typeParam T The type of the builder used to compose the command.
