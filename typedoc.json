@@ -35,6 +35,9 @@
     "typedoc-plugin-versions/etc/utils": {
       "refreshMetadata": "https://citkane.github.io/typedoc-plugin-versions/dev/functions/utils.refreshMetadata.html"
     },
+    "yargs": {
+      "yargs.Argv": "https://yargs.js.org/docs/#api-reference-argv"
+    },
     "@types/yargs": {
       "yargs.Argv": "https://yargs.js.org/docs/#api-reference-argv",
       "yargs.ArgumentsCamelCase": "https://yargs.js.org/docs/#api-reference-argv",

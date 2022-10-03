@@ -95,8 +95,8 @@ export const builder = (yargs: Argv) =>
 
 /**
  * {@link https://yargs.js.org/docs yargs} handler for the `purge` command.
- * @param {T} args The {@link @types/yargs!yargs.Argv argv} object parsed from the command line arguments.
- * @typeParam T The type of the parsed {@link @types/yargs!yargs.Argv argv} object.
+ * @param {T} args The {@link yargs!yargs.Argv argv} object parsed from the command line arguments.
+ * @typeParam T The type of the parsed {@link yargs!yargs.Argv argv} object.
  */
 export async function handler<T extends Args<ReturnType<typeof builder>>>(
     args: T
