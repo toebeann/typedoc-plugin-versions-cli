@@ -58,4 +58,4 @@ jobs:
 
       - name: Run tests
         shell: bash
-        run: npm test -- --ci
+        run: npm test -- --ci --runInBand
