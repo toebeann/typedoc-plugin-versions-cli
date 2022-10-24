@@ -57,5 +57,4 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        shell: bash
         run: npm test -- --ci --runInBand
