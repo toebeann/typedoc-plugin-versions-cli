@@ -1,6 +1,7 @@
 import { EOL } from 'node:os';
 import { join, resolve } from 'node:path';
-import { ensureDir, rm } from 'fs-extra';
+import process from 'node:process';
+import { ensureDir, rm, emptyDir } from 'fs-extra';
 import { inject } from 'prompts';
 import { getSemanticVersion } from 'typedoc-plugin-versions/src/etc/utils';
 
@@ -11,18 +12,21 @@ let consoleLogMock: jest.SpyInstance;
 let consoleErrorMock: jest.SpyInstance;
 let consoleTimeMock: jest.SpyInstance;
 let consoleTimeEndMock: jest.SpyInstance;
+let processExitMock: jest.SpyInstance;
 
 beforeAll(() => ensureDir(out));
 afterAll(() => rm(out, { recursive: true, force: true }));
 
 describe('when `out` points to empty directory', () => {
-    beforeEach(
-        () =>
-            (consoleErrorMock = jest
-                .spyOn(console, 'error')
-                .mockImplementation())
-    );
-    afterEach(() => consoleErrorMock.mockRestore());
+    beforeAll(() => emptyDir(out));
+    beforeEach(() => {
+        consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
+        processExitMock = jest.spyOn(process, 'exit').mockImplementation();
+    });
+    afterEach(() => {
+        consoleErrorMock.mockRestore();
+        processExitMock.mockRestore();
+    });
 
     test('should error: Missing docs for package.json version...', async () => {
         await cli().parse(`sync --out ${out}`);
@@ -30,6 +34,8 @@ describe('when `out` points to empty directory', () => {
         expect(console.error).toHaveBeenCalledWith(
             `Missing docs for package.json version: ${getSemanticVersion()}${EOL}Did you forget to run typedoc?`
         );
+        expect(process.exit).toHaveBeenCalledTimes(1);
+        expect(process.exit).toHaveBeenCalledWith(1);
     });
 });
 
