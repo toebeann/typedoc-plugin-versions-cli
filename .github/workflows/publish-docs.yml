@@ -41,7 +41,7 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: npm ci
 
-      - name: Install dependencies
+      - name: Install cached dependencies
         if: ${{ steps.cache.outputs.cache-hit == 'true' }}
         run: npm i
 
