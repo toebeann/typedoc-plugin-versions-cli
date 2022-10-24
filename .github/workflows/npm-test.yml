@@ -32,28 +32,17 @@ jobs:
         with:
           node-version: ${{ matrix.version }}
 
-      - name: Get npm cache directory
-        run: echo "cache_path=$(npm config get cache)" >> $GITHUB_ENV
-
       - name: Cache node_modules
         id: cache
         uses: actions/cache@v3
         env:
-          cache-name: cache-node-modules
+          cache-name: node-modules
         with:
-          path: ${{ env.cache_path }}
+          path: ./node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        name: List the state of node modules
-        continue-on-error: true
-        run: npm list
 
       - name: Install dependencies
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: npm ci
 
       - name: Run tests
