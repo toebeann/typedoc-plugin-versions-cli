@@ -34,10 +34,6 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: npm ci
 
-      - name: Install cached dependencies
-        if: ${{ steps.cache.outputs.cache-hit == 'true' }}
-        run: npm i
-
       - name: Generate code coverage reports
         run: npm test -- --coverage
         continue-on-error: true
