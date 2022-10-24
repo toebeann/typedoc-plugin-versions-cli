@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./node_modules
-          key: node-modules-${{ runner.os }}-${{ matrix.version }}-build-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-${{ matrix.version }}-build-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
