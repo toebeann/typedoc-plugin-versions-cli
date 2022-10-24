@@ -12,10 +12,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup node.js @ 18
+      - name: Setup node.js @ lts
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: lts/*
 
       - name: Get npm cache directory
         id: npm-cache
