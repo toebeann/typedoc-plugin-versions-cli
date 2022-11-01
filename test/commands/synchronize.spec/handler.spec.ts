@@ -1,3 +1,14 @@
+import {
+    afterAll,
+    afterEach,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    jest,
+} from '@jest/globals';
+
 import { EOL } from 'node:os';
 import { join, resolve } from 'node:path';
 import process from 'node:process';
@@ -8,11 +19,18 @@ import { getSemanticVersion } from 'typedoc-plugin-versions/src/etc/utils';
 import { cli } from '../../../src';
 
 const out = resolve(join('test', '.commands.sync.handler'));
-let consoleLogMock: jest.SpyInstance;
-let consoleErrorMock: jest.SpyInstance;
-let consoleTimeMock: jest.SpyInstance;
-let consoleTimeEndMock: jest.SpyInstance;
-let processExitMock: jest.SpyInstance;
+let consoleLogMock: jest.SpiedFunction<typeof console.log>;
+let consoleErrorMock: jest.SpiedFunction<typeof console.error>;
+let consoleTimeMock: jest.SpiedFunction<typeof console.time>;
+let consoleTimeEndMock: jest.SpiedFunction<typeof console.timeEnd>;
+let processExitMock: jest.SpiedFunction<typeof process.exit>;
+const consoleLogMockImplementation = <typeof console.log>(<unknown>undefined);
+const consoleTimeMockImplementation = <typeof console.time>(
+    consoleLogMockImplementation
+);
+const processExitMockImplementation = <typeof process.exit>(
+    consoleLogMockImplementation
+);
 
 beforeAll(() => ensureDir(out));
 afterAll(() => rm(out, { recursive: true, force: true }));
@@ -20,15 +38,19 @@ afterAll(() => rm(out, { recursive: true, force: true }));
 describe('when `out` points to empty directory', () => {
     beforeAll(() => emptyDir(out));
     beforeEach(() => {
-        consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
-        processExitMock = jest.spyOn(process, 'exit').mockImplementation();
+        consoleErrorMock = jest
+            .spyOn(console, 'error')
+            .mockImplementation(consoleLogMockImplementation);
+        processExitMock = jest
+            .spyOn(process, 'exit')
+            .mockImplementation(processExitMockImplementation);
     });
     afterEach(() => {
         consoleErrorMock.mockRestore();
         processExitMock.mockRestore();
     });
 
-    test('should error: Missing docs for package.json version...', async () => {
+    it('should error: Missing docs for package.json version...', async () => {
         await cli().parse(`sync --out ${out}`);
         expect(console.error).toHaveBeenCalledTimes(1);
         expect(console.error).toHaveBeenCalledWith(
@@ -51,13 +73,13 @@ describe('when `out` contains package.json version docs', () => {
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
+                    .mockImplementation(consoleLogMockImplementation);
                 consoleTimeMock = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
                 consoleTimeEndMock = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
             });
 
             afterEach(() => {
@@ -66,7 +88,7 @@ describe('when `out` contains package.json version docs', () => {
                 consoleTimeEndMock.mockRestore();
             });
 
-            test('should exit without making changes', async () => {
+            it('should exit without making changes', async () => {
                 inject(['']);
                 await cli().parse(`sync --out ${dir}`);
                 expect(console.log).toHaveBeenCalledTimes(1);
@@ -75,7 +97,7 @@ describe('when `out` contains package.json version docs', () => {
             });
 
             describe('when user passes --symlinks', () => {
-                test('should exit fixing symlinks only', async () => {
+                it('should exit fixing symlinks only', async () => {
                     await cli().parse(`sync --out ${dir} --symlinks`);
                     expect(console.log).toHaveBeenCalledTimes(1);
                     expect(console.time).toHaveBeenCalledTimes(1);
@@ -89,13 +111,13 @@ describe('when `out` contains package.json version docs', () => {
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
+                    .mockImplementation(consoleLogMockImplementation);
                 consoleTimeMock = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
                 consoleTimeEndMock = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
             });
 
             afterEach(() => {
@@ -104,7 +126,7 @@ describe('when `out` contains package.json version docs', () => {
                 consoleTimeEndMock.mockRestore();
             });
 
-            test('should make all changes', async () => {
+            it('should make all changes', async () => {
                 inject(['yes']);
                 await cli().parse(`sync --out ${dir}`);
                 expect(console.log).toHaveBeenCalledTimes(2);
@@ -118,13 +140,13 @@ describe('when `out` contains package.json version docs', () => {
             beforeEach(() => {
                 consoleLogMock = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
+                    .mockImplementation(consoleLogMockImplementation);
                 consoleTimeMock = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
                 consoleTimeEndMock = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
+                    .mockImplementation(consoleTimeMockImplementation);
             });
 
             afterEach(() => {
@@ -133,7 +155,7 @@ describe('when `out` contains package.json version docs', () => {
                 consoleTimeEndMock.mockRestore();
             });
 
-            test('should make all changes', async () => {
+            it('should make all changes', async () => {
                 await cli().parse(`sync --out ${dir} -y`);
                 expect(console.log).toHaveBeenCalledTimes(1);
                 expect(console.time).toHaveBeenCalledTimes(4);
@@ -145,11 +167,15 @@ describe('when `out` contains package.json version docs', () => {
 
     describe('when metadata up-to-date', () => {
         beforeEach(async () => {
-            consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
-            consoleTimeMock = jest.spyOn(console, 'time').mockImplementation();
+            consoleLogMock = jest
+                .spyOn(console, 'log')
+                .mockImplementation(consoleLogMockImplementation);
+            consoleTimeMock = jest
+                .spyOn(console, 'time')
+                .mockImplementation(consoleTimeMockImplementation);
             consoleTimeEndMock = jest
                 .spyOn(console, 'timeEnd')
-                .mockImplementation();
+                .mockImplementation(consoleTimeMockImplementation);
             await cli().parse(`sync --out ${dir} -y`);
             consoleLogMock.mockReset();
             consoleTimeMock.mockReset();
@@ -162,7 +188,7 @@ describe('when `out` contains package.json version docs', () => {
             consoleTimeEndMock.mockRestore();
         });
 
-        test('should log: "Already up-to-date."', async () => {
+        it('should log: "Already up-to-date."', async () => {
             inject(['']);
             await cli().parse(`sync --out ${dir}`);
             expect(console.log).toHaveBeenCalledTimes(1);

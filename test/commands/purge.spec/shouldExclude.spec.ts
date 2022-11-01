@@ -1,13 +1,15 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { shouldExclude } from '../../../src/commands/purge';
 
 describe('when exclude is empty', () => {
-    test('should return false', () => {
+    it('should return false', () => {
         expect(shouldExclude('v1.0.0')).toBe(false);
     });
 });
 
 describe('when version is an exact match for an element of exclude', () => {
-    test('should return true', () => {
+    it('should return true', () => {
         expect(
             shouldExclude('v1.0.0', ['v1.0.0'], { includePrerelease: true })
         ).toBe(true);
@@ -38,7 +40,7 @@ describe('when version is an exact match for an element of exclude', () => {
 });
 
 describe('when exclude includes a minor version which matches', () => {
-    test('should return true', () => {
+    it('should return true', () => {
         expect(
             shouldExclude('v1.0.0', ['v1.0.x'], { includePrerelease: true })
         ).toBe(true);
@@ -69,7 +71,7 @@ describe('when exclude includes a minor version which matches', () => {
 });
 
 describe('when exclude includes a major version which matches', () => {
-    test('should return true', () => {
+    it('should return true', () => {
         expect(
             shouldExclude('v1.0.0', ['v1.x.x'], { includePrerelease: true })
         ).toBe(true);

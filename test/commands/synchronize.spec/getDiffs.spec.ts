@@ -1,3 +1,5 @@
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { ensureDir, rm, stat, writeFile } from 'fs-extra';
 import { metadata } from 'typedoc-plugin-versions';
@@ -21,7 +23,7 @@ describe('when `out` points to an empty directory', () => {
             stable: 'v1.0.0',
         };
 
-        test('should complete appropriately', async () => {
+        it('should complete appropriately', async () => {
             const diffs = getDiffs(dir, metadata, refreshedMetadata);
             expect(diffs).resolves.not.toThrow();
 
@@ -54,7 +56,7 @@ describe('when `out` points to a directory containing metadata', () => {
             stable: 'v1.0.0',
         };
 
-        test('should complete appropriately', async () => {
+        it('should complete appropriately', async () => {
             const diffs = getDiffs(dir, metadata, refreshedMetadata);
             expect(diffs).resolves.not.toThrow();
 
