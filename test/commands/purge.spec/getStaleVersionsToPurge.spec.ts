@@ -1,3 +1,12 @@
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    it,
+} from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { each } from 'async';
 import { ensureDir, rm } from 'fs-extra';
@@ -18,33 +27,41 @@ afterAll(() => rm(resolve(out), { recursive: true, force: true }));
 beforeEach(() => each(versions, async (v) => ensureDir(resolve(join(out, v)))));
 
 describe('when versions = []', () => {
-    beforeAll(() => (versions = []));
+    beforeAll(() => {
+        versions = [];
+    });
 
-    test('should return []', async () => {
+    it('should return []', async () => {
         expect(await getStaleVersionsToPurge(versions, options)).toEqual([]);
     });
 });
 
 describe('when versions = [ "v0.1.0" ]', () => {
-    beforeAll(() => (versions = ['v0.1.0']));
+    beforeAll(() => {
+        versions = ['v0.1.0'];
+    });
 
-    test('should return []', async () => {
+    it('should return []', async () => {
         expect(await getStaleVersionsToPurge(versions, options)).toEqual([]);
     });
 });
 
 describe('when versions = [ "v1.0.0-alpha.1", "v0.1.0" ]', () => {
-    beforeAll(() => (versions = ['v1.0.0-alpha.1', 'v0.1.0']));
+    beforeAll(() => {
+        versions = ['v1.0.0-alpha.1', 'v0.1.0'];
+    });
 
-    test('should return []', async () => {
+    it('should return []', async () => {
         expect(await getStaleVersionsToPurge(versions, options)).toEqual([]);
     });
 });
 
 describe('when versions = [ "v1.0.0", "v1.0.0-alpha.1", "v0.1.0" ]', () => {
-    beforeAll(() => (versions = ['v1.0.0', 'v1.0.0-alpha.1', 'v0.1.0']));
+    beforeAll(() => {
+        versions = ['v1.0.0', 'v1.0.0-alpha.1', 'v0.1.0'];
+    });
 
-    test('should return [ "v1.0.0-alpha.1", "v0.1.0" ]', async () => {
+    it('should return [ "v1.0.0-alpha.1", "v0.1.0" ]', async () => {
         expect(await getStaleVersionsToPurge(versions, options)).toEqual([
             'v1.0.0-alpha.1',
             'v0.1.0',

@@ -1,3 +1,5 @@
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { ensureSymlink, ensureDir, rm } from 'fs-extra';
 
@@ -8,13 +10,13 @@ beforeAll(() => ensureDir(testDir));
 afterAll(() => rm(testDir, { recursive: true, force: true }));
 
 describe('when path points to a file', () => {
-    test('should return false', async () => {
+    it('should return false', async () => {
         expect(await isBrokenSymlink(resolve('tsconfig.json'))).toBe(false);
     });
 });
 
 describe('when path points to a non-existant path', () => {
-    test('should return false', async () => {
+    it('should return false', async () => {
         expect(await isBrokenSymlink(resolve('foo.bar'))).toBe(false);
     });
 });
@@ -28,7 +30,7 @@ describe('when path points to a valid symbolic link', () => {
         await ensureSymlink(src, target, 'junction');
     });
 
-    test('should return false', async () => {
+    it('should return false', async () => {
         expect(await isBrokenSymlink(target)).toBe(false);
     });
 });
@@ -43,7 +45,7 @@ describe('when path points to a broken symbolic link', () => {
         await rm(src, { recursive: true, force: true });
     });
 
-    test('should return false', async () => {
+    it('should return false', async () => {
         expect(await isBrokenSymlink(target)).toBe(true);
     });
 });

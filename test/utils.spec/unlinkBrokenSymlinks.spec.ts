@@ -1,3 +1,5 @@
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { ensureSymlink, ensureDir, rm, stat, lstat, readlink } from 'fs-extra';
 
@@ -8,7 +10,7 @@ beforeAll(() => ensureDir(testDir));
 afterAll(() => rm(testDir, { recursive: true, force: true }));
 
 describe('when dir points to a file', () => {
-    test('should throw error', async () => {
+    it('should throw error', async () => {
         try {
             await unlinkBrokenSymlinks(resolve('tsconfig.json'));
             fail('must throw');
@@ -22,7 +24,7 @@ describe('when dir points to an empty directory', () => {
     const dir = resolve(join(testDir, 'foo'));
     beforeAll(() => ensureDir(dir));
 
-    test('should complete normally', () => {
+    it('should complete normally', () => {
         expect(unlinkBrokenSymlinks(testDir)).resolves.not.toThrow();
     });
 });
@@ -37,7 +39,7 @@ describe('when dir points to a directory containing valid symlinks', () => {
         await ensureSymlink(src, target, 'junction');
     });
 
-    test('should complete normally without deleting any symlinks', async () => {
+    it('should complete normally without deleting any symlinks', async () => {
         await unlinkBrokenSymlinks(dir);
         expect((await stat(dir)).isDirectory()).toBe(true);
         expect((await stat(src)).isDirectory()).toBe(true);
@@ -57,7 +59,7 @@ describe('when dir points to a directory containing invalid symlinks', () => {
         await rm(src, { recursive: true, force: true });
     });
 
-    test('should complete and to have removed the broken symlink', async () => {
+    it('should complete and to have removed the broken symlink', async () => {
         await unlinkBrokenSymlinks(dir);
         expect((await stat(dir)).isDirectory()).toBe(true);
         expect(stat(src)).rejects.toThrow();

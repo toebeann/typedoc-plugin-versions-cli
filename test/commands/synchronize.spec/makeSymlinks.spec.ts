@@ -1,3 +1,5 @@
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { each } from 'async';
 import { ensureDir, rm, stat, lstat, readlink, pathExists } from 'fs-extra';
@@ -23,7 +25,7 @@ describe('when metadata = { versions: [ "v1.0.0" ], stable: "v1.0.0" }', () => {
         )
     );
 
-    test('should create symlinks appropriately', async () => {
+    it('should create symlinks appropriately', async () => {
         makeSymlinks(dir, metadata);
         expect((await stat(dir)).isDirectory()).toBe(true);
 
@@ -53,7 +55,7 @@ describe('when metadata = { versions: [ "v0.1.0" ], dev: "v0.1.0" }', () => {
         )
     );
 
-    test('should create symlinks appropriately', async () => {
+    it('should create symlinks appropriately', async () => {
         makeSymlinks(dir, metadata);
         expect((await stat(dir)).isDirectory()).toBe(true);
 

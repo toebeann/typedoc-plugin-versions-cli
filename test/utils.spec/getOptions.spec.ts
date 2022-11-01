@@ -1,3 +1,5 @@
+import { beforeAll, describe, expect, it } from '@jest/globals';
+
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { cli, isOptions, Options } from '../../src';
@@ -19,15 +21,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -46,15 +48,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -64,7 +66,7 @@ describe('local package', () => {
     });
 
     describe('when `--out foo`', () => {
-        test('should throw Error', async () => {
+        it('should throw Error', async () => {
             try {
                 await getOptions(
                     await cli()
@@ -89,15 +91,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -116,15 +118,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -134,7 +136,7 @@ describe('local package', () => {
     });
 
     describe('when `--tsconfig ./foobar`', () => {
-        test('should throw Error', async () => {
+        it('should throw Error', async () => {
             try {
                 await getOptions(
                     await cli()
@@ -159,15 +161,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -186,15 +188,15 @@ describe('local package', () => {
             );
         });
 
-        test('return should implement the Options interface', () => {
+        it('return should implement the Options interface', () => {
             expect(isOptions(options)).toBe(true);
         });
 
-        test('return.out should be "./docs"', () => {
+        it('return.out should be "./docs"', () => {
             expect(options.out).toBe(join(dir, 'docs'));
         });
 
-        test('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
+        it('return.versions should equal {stable: "auto", dev: "auto", domLocation: "false"}', () => {
             expect(options.versions).toEqual({
                 stable: 'auto',
                 dev: 'auto',
@@ -204,7 +206,7 @@ describe('local package', () => {
     });
 
     describe('when `--typedoc ./bar`', () => {
-        test('should throw Error', async () => {
+        it('should throw Error', async () => {
             try {
                 await getOptions(
                     await cli()
