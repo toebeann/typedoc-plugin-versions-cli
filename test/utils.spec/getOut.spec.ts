@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { cli } from '../../src';
@@ -10,7 +12,7 @@ describe('local package', () => {
 
     describe('when no cli arguments passed', () => {
         describe('when parsing `commonOptions`', () => {
-            test('return should be "./docs"', async () => {
+            it('return should be "./docs"', async () => {
                 expect(
                     await getOut(
                         await cli()
@@ -23,7 +25,7 @@ describe('local package', () => {
         });
 
         describe('when parsing only `out`', () => {
-            test('should throw Error', async () => {
+            it('should throw Error', async () => {
                 try {
                     await getOut(
                         await cli().options({ out }).demandCommand(0).parse()
@@ -38,7 +40,7 @@ describe('local package', () => {
 
     describe('when `--out docs', () => {
         describe('when parsing `commonOptions`', () => {
-            test('return should be "./docs"', async () => {
+            it('return should be "./docs"', async () => {
                 expect(
                     await getOut(
                         await cli()
@@ -51,7 +53,7 @@ describe('local package', () => {
         });
 
         describe('when parsing only `out`', () => {
-            test('return should be "./docs"', async () => {
+            it('return should be "./docs"', async () => {
                 expect(
                     await getOut(
                         await cli()

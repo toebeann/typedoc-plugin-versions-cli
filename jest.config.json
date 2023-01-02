@@ -1,5 +1,7 @@
 {
   "preset": "ts-jest",
+  "injectGlobals": false,
+  "restoreMocks": true,
   "testEnvironment": "node",
   "coverageReporters": ["html", "text", "cobertura", "json", "lcovonly"],
   "coverageThreshold": {

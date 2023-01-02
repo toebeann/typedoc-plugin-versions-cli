@@ -1,3 +1,14 @@
+import {
+    afterAll,
+    afterEach,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    jest,
+} from '@jest/globals';
+
 import { EOL } from 'node:os';
 import { join, resolve } from 'node:path';
 import process from 'node:process';
@@ -8,34 +19,35 @@ import { getSemanticVersion } from 'typedoc-plugin-versions/src/etc/utils';
 import { cli } from '../../../src';
 
 const out = resolve(join('test', '.commands.sync.handler'));
-let consoleLogMock: jest.SpyInstance;
-let consoleErrorMock: jest.SpyInstance;
-let consoleTimeMock: jest.SpyInstance;
-let consoleTimeEndMock: jest.SpyInstance;
-let processExitMock: jest.SpyInstance;
+const consoleLogMockImplementation = (<unknown>undefined) as typeof console.log;
+const consoleTimeMockImplementation = (<unknown>(
+    undefined
+)) as typeof console.time;
+const processExitMockImplementation = (<unknown>(
+    undefined
+)) as typeof process.exit;
 
 beforeAll(() => ensureDir(out));
 afterAll(() => rm(out, { recursive: true, force: true }));
 
 describe('when `out` points to empty directory', () => {
     beforeAll(() => emptyDir(out));
-    beforeEach(() => {
-        consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
-        processExitMock = jest.spyOn(process, 'exit').mockImplementation();
-    });
-    afterEach(() => {
-        consoleErrorMock.mockRestore();
-        processExitMock.mockRestore();
-    });
 
-    test('should error: Missing docs for package.json version...', async () => {
+    it('should error: Missing docs for package.json version...', async () => {
+        const error = jest
+            .spyOn(console, 'error')
+            .mockImplementation(consoleLogMockImplementation);
+        const exit = jest
+            .spyOn(process, 'exit')
+            .mockImplementation(processExitMockImplementation);
+
         await cli().parse(`sync --out ${out}`);
-        expect(console.error).toHaveBeenCalledTimes(1);
-        expect(console.error).toHaveBeenCalledWith(
+        expect(error).toHaveBeenCalledTimes(1);
+        expect(error).toHaveBeenCalledWith(
             `Missing docs for package.json version: ${getSemanticVersion()}${EOL}Did you forget to run typedoc?`
         );
-        expect(process.exit).toHaveBeenCalledTimes(1);
-        expect(process.exit).toHaveBeenCalledWith(1);
+        expect(exit).toHaveBeenCalledTimes(1);
+        expect(exit).toHaveBeenCalledWith(1);
     });
 });
 
@@ -48,125 +60,99 @@ describe('when `out` contains package.json version docs', () => {
 
     describe('when metadata out of date', () => {
         describe('when user chooses "no"', () => {
-            beforeEach(() => {
-                consoleLogMock = jest
+            it('should exit without making changes', async () => {
+                const log = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
-                consoleTimeMock = jest
+                    .mockImplementation(consoleLogMockImplementation);
+                const time = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
-                consoleTimeEndMock = jest
+                    .mockImplementation(consoleTimeMockImplementation);
+                const timeEnd = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
-            });
+                    .mockImplementation(consoleTimeMockImplementation);
 
-            afterEach(() => {
-                consoleLogMock.mockRestore();
-                consoleTimeMock.mockRestore();
-                consoleTimeEndMock.mockRestore();
-            });
-
-            test('should exit without making changes', async () => {
                 inject(['']);
                 await cli().parse(`sync --out ${dir}`);
-                expect(console.log).toHaveBeenCalledTimes(1);
-                expect(console.time).not.toHaveBeenCalled();
-                expect(console.timeEnd).not.toHaveBeenCalled();
+                expect(log).toHaveBeenCalledTimes(1);
+                expect(time).not.toHaveBeenCalled();
+                expect(timeEnd).not.toHaveBeenCalled();
             });
 
             describe('when user passes --symlinks', () => {
-                test('should exit fixing symlinks only', async () => {
+                it('should exit fixing symlinks only', async () => {
+                    const log = jest
+                        .spyOn(console, 'log')
+                        .mockImplementation(consoleLogMockImplementation);
+                    const time = jest
+                        .spyOn(console, 'time')
+                        .mockImplementation(consoleTimeMockImplementation);
+                    const timeEnd = jest
+                        .spyOn(console, 'timeEnd')
+                        .mockImplementation(consoleTimeMockImplementation);
+
                     await cli().parse(`sync --out ${dir} --symlinks`);
-                    expect(console.log).toHaveBeenCalledTimes(1);
-                    expect(console.time).toHaveBeenCalledTimes(1);
-                    expect(console.time).toHaveBeenCalledWith('symlinks');
-                    expect(console.timeEnd).toHaveBeenCalledTimes(1);
+                    expect(log).toHaveBeenCalledTimes(1);
+                    expect(time).toHaveBeenCalledTimes(1);
+                    expect(time).toHaveBeenCalledWith('symlinks');
+                    expect(timeEnd).toHaveBeenCalledTimes(1);
                 });
             });
         });
 
         describe('when user chooses "yes"', () => {
-            beforeEach(() => {
-                consoleLogMock = jest
+            it('should make all changes', async () => {
+                const log = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
-                consoleTimeMock = jest
+                    .mockImplementation(consoleLogMockImplementation);
+                const time = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
-                consoleTimeEndMock = jest
+                    .mockImplementation(consoleTimeMockImplementation);
+                const timeEnd = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
-            });
+                    .mockImplementation(consoleTimeMockImplementation);
 
-            afterEach(() => {
-                consoleLogMock.mockRestore();
-                consoleTimeMock.mockRestore();
-                consoleTimeEndMock.mockRestore();
-            });
-
-            test('should make all changes', async () => {
                 inject(['yes']);
                 await cli().parse(`sync --out ${dir}`);
-                expect(console.log).toHaveBeenCalledTimes(2);
-                expect(console.time).toHaveBeenCalledTimes(4);
-                expect(console.timeEnd).toHaveBeenCalledTimes(4);
-                expect(console.time).toHaveBeenCalledWith('symlinks');
+                expect(log).toHaveBeenCalledTimes(2);
+                expect(time).toHaveBeenCalledTimes(4);
+                expect(timeEnd).toHaveBeenCalledTimes(4);
+                expect(time).toHaveBeenCalledWith('symlinks');
             });
         });
 
         describe('when user passes -y', () => {
-            beforeEach(() => {
-                consoleLogMock = jest
+            it('should make all changes', async () => {
+                const log = jest
                     .spyOn(console, 'log')
-                    .mockImplementation();
-                consoleTimeMock = jest
+                    .mockImplementation(consoleLogMockImplementation);
+                const time = jest
                     .spyOn(console, 'time')
-                    .mockImplementation();
-                consoleTimeEndMock = jest
+                    .mockImplementation(consoleTimeMockImplementation);
+                const timeEnd = jest
                     .spyOn(console, 'timeEnd')
-                    .mockImplementation();
-            });
+                    .mockImplementation(consoleTimeMockImplementation);
 
-            afterEach(() => {
-                consoleLogMock.mockRestore();
-                consoleTimeMock.mockRestore();
-                consoleTimeEndMock.mockRestore();
-            });
-
-            test('should make all changes', async () => {
                 await cli().parse(`sync --out ${dir} -y`);
-                expect(console.log).toHaveBeenCalledTimes(1);
-                expect(console.time).toHaveBeenCalledTimes(4);
-                expect(console.timeEnd).toHaveBeenCalledTimes(4);
-                expect(console.time).toHaveBeenCalledWith('symlinks');
+                expect(log).toHaveBeenCalledTimes(1);
+                expect(time).toHaveBeenCalledTimes(4);
+                expect(timeEnd).toHaveBeenCalledTimes(4);
+                expect(time).toHaveBeenCalledWith('symlinks');
             });
         });
     });
 
     describe('when metadata up-to-date', () => {
-        beforeEach(async () => {
-            consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
-            consoleTimeMock = jest.spyOn(console, 'time').mockImplementation();
-            consoleTimeEndMock = jest
-                .spyOn(console, 'timeEnd')
-                .mockImplementation();
+        it('should log: "Already up-to-date."', async () => {
             await cli().parse(`sync --out ${dir} -y`);
-            consoleLogMock.mockReset();
-            consoleTimeMock.mockReset();
-            consoleTimeEndMock.mockReset();
-        });
 
-        afterEach(() => {
-            consoleLogMock.mockRestore();
-            consoleTimeMock.mockRestore();
-            consoleTimeEndMock.mockRestore();
-        });
+            const log = jest
+                .spyOn(console, 'log')
+                .mockImplementation(consoleLogMockImplementation);
 
-        test('should log: "Already up-to-date."', async () => {
             inject(['']);
             await cli().parse(`sync --out ${dir}`);
-            expect(console.log).toHaveBeenCalledTimes(1);
-            expect(console.log).toHaveBeenCalledWith('Already up-to-date.');
+            expect(log).toHaveBeenCalledTimes(1);
+            expect(log).toHaveBeenCalledWith('Already up-to-date.');
         });
     });
 });

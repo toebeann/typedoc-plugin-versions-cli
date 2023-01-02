@@ -1,10 +1,12 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 
 import { findFile } from '../../src/utils';
 
 describe('when path = undefined & filePaths = undefined', () => {
-    test('should throw Error', async () => {
+    it('should throw Error', async () => {
         try {
             await findFile();
             fail('must throw');
@@ -19,7 +21,7 @@ describe('when path = undefined & filePaths = undefined', () => {
 });
 
 describe('when path = undefined & filePaths = ["typedoc.json"]', () => {
-    test('should find local package typedoc.json', async () => {
+    it('should find local package typedoc.json', async () => {
         expect(await findFile(undefined, ['typedoc.json'])).toBe(
             resolve(join(cwd(), 'typedoc.json'))
         );
@@ -27,7 +29,7 @@ describe('when path = undefined & filePaths = ["typedoc.json"]', () => {
 });
 
 describe('when path = undefined & filePaths = ["foo.bar", "typedoc.json"]', () => {
-    test('should find local package typedoc.json', async () => {
+    it('should find local package typedoc.json', async () => {
         expect(await findFile(undefined, ['foo.bar', 'typedoc.json'])).toBe(
             resolve(join(cwd(), 'typedoc.json'))
         );
@@ -35,7 +37,7 @@ describe('when path = undefined & filePaths = ["foo.bar", "typedoc.json"]', () =
 });
 
 describe('when path = undefined & filePaths = ["foo.bar"]', () => {
-    test('should throw Error', async () => {
+    it('should throw Error', async () => {
         try {
             await findFile(undefined, ['foo.bar']);
             fail('must throw');
@@ -46,7 +48,7 @@ describe('when path = undefined & filePaths = ["foo.bar"]', () => {
 });
 
 describe('when path = "typedoc.json"', () => {
-    test('should find local package typedoc.json', async () => {
+    it('should find local package typedoc.json', async () => {
         expect(await findFile('typedoc.json')).toBe(
             resolve(join(cwd(), 'typedoc.json'))
         );
@@ -54,7 +56,7 @@ describe('when path = "typedoc.json"', () => {
 });
 
 describe('when path = "foo.bar"', () => {
-    test('should throw Error', async () => {
+    it('should throw Error', async () => {
         try {
             await findFile('foo.bar');
             fail('must throw');

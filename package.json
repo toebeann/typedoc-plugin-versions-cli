@@ -1,6 +1,6 @@
 {
   "name": "typedoc-plugin-versions-cli",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A companion CLI tool for typedoc-plugins-versions.",
   "main": "./dist/index.js",
   "bin": {
@@ -89,7 +89,7 @@
     "@typescript-eslint/parser": "^5.38.0",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "jest": "^29.0.3",
     "prettier": "^2.7.1",
     "ts-jest": "^29.0.1",
