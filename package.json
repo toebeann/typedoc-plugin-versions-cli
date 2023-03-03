@@ -80,7 +80,7 @@
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
     "@types/async": "^3.2.15",
-    "@types/fs-extra": "^9.0.13",
+    "@types/fs-extra": "^11.0.0",
     "@types/jest": "^29.0.3",
     "@types/prompts": "^2.0.14",
     "@types/semver": "^7.3.12",
