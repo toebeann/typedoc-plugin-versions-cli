@@ -225,7 +225,7 @@ export const refreshVersionJs = (
 export const refreshIndexHtml = (metadata: refreshedMetadata): string =>
     `<meta http-equiv="refresh" content="0; url=${
         metadata.stable ? 'stable' : 'dev'
-    }"/>`;
+    }/" />`;
 
 /**
  * Generates all necessary symbolic links for {@link https://citkane.github.io/typedoc-plugin-versions typedoc-plugin-versions}.
